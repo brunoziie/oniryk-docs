@@ -10,6 +10,7 @@ const schema = zod.object({
   NODE_ENV: zod.enum(['development', 'production']).default('development'),
   APP_SECRET: zod.string(),
   DATABASE_URL: zod.string().url(),
+  JWT_LIFETIME: zod.string().default('30 days'), // in minutes (30 days)
   DEBUG: zod.boolean().default(false), // will be ignored if NODE_ENV is not 'development'
 });
 

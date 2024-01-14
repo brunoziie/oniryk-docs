@@ -2,8 +2,9 @@ import { withError } from '@app/helpers/http';
 import env from '@/env';
 import { MiddlewareContext } from '@app/contracts/http.contract';
 import jwt from 'jsonwebtoken';
+import JwtService from '@/src/services/auth/jwt';
 
-export default function AuthMiddleware(context: MiddlewareContext) {
+export default async function AuthMiddleware(context: MiddlewareContext) {
   const { request, response, next } = context;
   const authHeader = request.headers.authorization;
 
@@ -23,11 +24,10 @@ export default function AuthMiddleware(context: MiddlewareContext) {
     return withError(response, new Error('Auth: Token malformatted'), 401);
   }
 
-  jwt.verify(token, env.APP_SECRET || '', (err, decoded) => {
-    if (err) {
-      return withError(response, new Error('Auth: Invalid token'), 401);
-    }
-
-    return next();
-  });
+  try {
+    request.user = await JwtService.verify(token);
+    next();
+  } catch (err) {
+    return withError(response, new Error('Auth: Token invalid'), 401);
+  }
 }

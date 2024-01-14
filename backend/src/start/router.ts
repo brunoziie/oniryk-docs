@@ -26,8 +26,6 @@ export function route(
       return middleware;
     });
 
-    console.log(`Registering route ${method.toUpperCase()} ${path}`);
-
     app[method](path, ...middlewareChain, handler);
   };
 }

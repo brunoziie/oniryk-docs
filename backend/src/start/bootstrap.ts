@@ -2,8 +2,9 @@ import express, { Request, Response } from 'express';
 import { HttpServerInitializer } from '@app/contracts/http.contract';
 import { withError } from '@app/helpers/http';
 import db from '@app/database/connector';
-import routes from './routes';
+import routes from '@app/start/routes';
 import env from '@/env';
+import hocuspocus from '@app/start/hocuspocus';
 
 const http: HttpServerInitializer = ({ setup }) => {
   const app = express();
@@ -32,8 +33,11 @@ const http: HttpServerInitializer = ({ setup }) => {
 export default async function start() {
   const app = http({
     setup: (app) => {
-      console.log('Setting up routes...');
+      // Setup routes
       routes.forEach((route) => route({ app, db }));
+
+      // Setup Hocuspocus server
+      hocuspocus({ app, db });
     },
   });
 

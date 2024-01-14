@@ -11,7 +11,7 @@ export async function up({ schema }: Knex): Promise<void> {
     table.string('avatar').nullable();
     table.string('favorite_color', 7).nullable();
 
-    table.timestamps();
+    table.timestamps(true, true);
     table.timestamp('deleted_at').nullable();
   });
 }
