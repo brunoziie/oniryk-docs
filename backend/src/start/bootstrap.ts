@@ -15,12 +15,12 @@ const http: HttpServerInitializer = ({ setup }) => {
     setup(app);
   }
 
-  app.use((err: Error, req: Request, res: Response) => {
-    withError(res, err);
-  });
-
   app.get('*', (req: Request, res: Response) => {
     withError(res, new Error(`Route ${req.originalUrl} not found`), 404);
+  });
+
+  app.use((err: Error, req: Request, res: Response) => {
+    withError(res, err);
   });
 
   app.listen(env.PORT, () => {

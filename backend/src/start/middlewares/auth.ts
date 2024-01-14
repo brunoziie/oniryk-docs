@@ -1,8 +1,6 @@
-import { withError } from '@app/helpers/http';
-import env from '@/env';
-import { MiddlewareContext } from '@app/contracts/http.contract';
-import jwt from 'jsonwebtoken';
 import JwtService from '@/src/services/auth/jwt';
+import { MiddlewareContext } from '@app/contracts/http.contract';
+import { withError } from '@app/helpers/http';
 
 export default async function AuthMiddleware(context: MiddlewareContext) {
   const { request, response, next } = context;
