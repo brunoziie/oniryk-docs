@@ -6,12 +6,25 @@ import path = require('path');
 const original = dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const schema = zod.object({
-  PORT: zod.number().default(3000),
   NODE_ENV: zod.enum(['development', 'production']).default('development'),
-  APP_SECRET: zod.string(),
-  DATABASE_URL: zod.string().url(),
-  JWT_LIFETIME: zod.string().default('30 days'), // in minutes (30 days)
+  PORT: zod.number().default(3000),
   DEBUG: zod.boolean().default(false), // will be ignored if NODE_ENV is not 'development'
+
+  // Session / Crypto
+  APP_SECRET: zod.string(),
+  JWT_LIFETIME: zod.string().default('30 days'), // any valid format to vercel/ms (github.com/vercel/ms)
+
+  // Database
+  DATABASE_URL: zod.string().url(),
+
+  // OAuth
+  GITHUB_CLIENT_ID: zod.string(),
+  GITHUB_CLIENT_SECRET: zod.string(),
+  GITHUB_CALLBACK_URL: zod.string().url(),
+
+  GOOGLE_CLIENT_ID: zod.string(),
+  GOOGLE_CLIENT_SECRET: zod.string(),
+  GOOGLE_CALLBACK_URL: zod.string().url(),
 });
 
 const env = schema.parse(parser(original.parsed || {}));

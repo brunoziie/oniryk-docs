@@ -14,7 +14,7 @@ export type HttpContextContract = {
   db: Knex;
 };
 
-export type RouteHandler = (params: HttpContextContract) => void;
+export type RouteHandler = (params: HttpContextContract) => void | Promise<void>;
 
 export type RouteAction = (
   req: Request,

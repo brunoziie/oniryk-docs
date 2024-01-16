@@ -6,6 +6,7 @@ import {
   RouteMiddleware,
   RouteMiddlewareContract,
 } from '@app/contracts/http.contract';
+import { withError } from '../helpers/http';
 
 export function route(
   method: RouteMethod,
@@ -14,8 +15,12 @@ export function route(
   middlewares?: RouteMiddlewareContract[]
 ) {
   return ({ app, db }: RouteInjector) => {
-    const handler: RouteAction = (request, response) => {
-      action({ request, response, db });
+    const handler: RouteAction = async (request, response) => {
+      try {
+        return await action({ request, response, db });
+      } catch (error) {
+        withError(response, error);
+      }
     };
 
     const middlewareChain = (middlewares || []).map((cur) => {

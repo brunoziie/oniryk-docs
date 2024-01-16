@@ -11,15 +11,14 @@ const http: HttpServerInitializer = ({ setup }) => {
 
   app.use(express.json());
 
-  if (setup) {
-    setup(app);
-  }
+  setup && setup(app);
 
   app.get('*', (req: Request, res: Response) => {
     withError(res, new Error(`Route ${req.originalUrl} not found`), 404);
   });
 
   app.use((err: Error, req: Request, res: Response) => {
+    console.error('dsaddasda');
     withError(res, err);
   });
 
