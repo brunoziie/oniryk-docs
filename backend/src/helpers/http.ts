@@ -1,6 +1,10 @@
 import type { Response } from 'express';
 
-export function withSuccess(response: Response, data: any, statusCode: number = 200) {
+export function withSuccess(
+  response: Response,
+  data: any = null,
+  statusCode: number = 200
+) {
   response.status(statusCode).json({
     status: 'OK',
     data,

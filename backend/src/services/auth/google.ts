@@ -1,8 +1,8 @@
 import env from '@/env';
 import { encrypt } from '@/src/helpers/bcrypt';
+import { randomUUID } from 'crypto';
 import { Knex } from 'knex';
 import { nanoid } from 'nanoid';
-import { v4 as uuid } from 'uuid';
 import uniqolor from 'uniqolor';
 
 const GOOGLE_BASE_URL = 'https://accounts.google.com/o/oauth2/v2';
@@ -84,12 +84,12 @@ export default class GoogleService {
     }
 
     const newUser = {
-      id: uuid(),
+      id: randomUUID(),
       display_name: profile.name,
       username: `user_${nanoid(8)}`,
       email: profile.email,
       google_id: profile.id,
-      password: await encrypt(uuid()),
+      password: await encrypt(randomUUID()),
       favorite_color: uniqolor.random().color,
     };
 

@@ -2,6 +2,14 @@ import type { Express, NextFunction, Request, Response } from 'express';
 import { AuthContract } from './auth.contract';
 import knex, { Knex } from 'knex';
 
+declare global {
+  namespace Express {
+    export interface Request {
+      inputs?: Record<string, any>;
+    }
+  }
+}
+
 export type InitializerConfig = {
   setup?: (app: Express) => void;
 };

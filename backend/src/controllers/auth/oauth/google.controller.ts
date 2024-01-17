@@ -1,17 +1,17 @@
-import { HttpContextContract } from '@app/contracts/http.contract';
-import { withSuccess } from '@app/helpers/http';
-import JwtService from '@/src/services/auth/jwt';
 import GoogleService from '@/src/services/auth/google';
 import { SessionService } from '@/src/services/auth/session';
+import { HttpContextContract } from '@app/contracts/http.contract';
+import { withSuccess } from '@app/helpers/http';
 
 export default class GoogleOAuthController {
   static async authorize({ response }: HttpContextContract) {
     const url = GoogleService.getAuthorizationUrl();
-    response.redirect(url);
+
+    withSuccess(response, { authorization_url: url });
   }
 
   static async callback({ request, response, db }: HttpContextContract) {
-    const { code } = request.query;
+    const { code } = request.inputs!;
 
     if (!code) {
       throw new Error('Missing code');

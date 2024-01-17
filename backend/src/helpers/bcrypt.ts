@@ -12,12 +12,12 @@ export async function encrypt(value: string) {
 }
 
 export async function compare(value: string, hash: string) {
-  return await new Promise((resolve, reject) => {
+  return (await new Promise((resolve, reject) => {
     bcrypt.compare(value, hash, function (err, result) {
       if (err) {
         reject(err);
       }
       resolve(result);
     });
-  });
+  })) as boolean;
 }

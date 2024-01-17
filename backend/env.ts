@@ -9,6 +9,7 @@ const schema = zod.object({
   NODE_ENV: zod.enum(['development', 'production']).default('development'),
   PORT: zod.number().default(3000),
   DEBUG: zod.boolean().default(false), // will be ignored if NODE_ENV is not 'development'
+  FRONTEND_URL: zod.string().url(),
 
   // Session / Crypto
   APP_SECRET: zod.string(),
@@ -16,6 +17,10 @@ const schema = zod.object({
 
   // Database
   DATABASE_URL: zod.string().url(),
+
+  // Mailer
+  MAILER_SMTP_URL: zod.string().url(),
+  MAILER_FROM: zod.string(),
 
   // OAuth
   GITHUB_CLIENT_ID: zod.string(),

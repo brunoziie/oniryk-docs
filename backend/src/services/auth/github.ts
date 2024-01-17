@@ -1,9 +1,9 @@
 import env from '@/env';
 import { encrypt } from '@app/helpers/bcrypt';
+import { randomUUID } from 'crypto';
 import { Knex } from 'knex';
 import { nanoid } from 'nanoid';
 import uniqolor from 'uniqolor';
-import { v4 as uuid } from 'uuid';
 
 const GH_BASE = 'https://github.com/login/oauth';
 const GH_SCOPES = ['user:email', 'read:user'];
@@ -95,12 +95,12 @@ export default class GithubService {
         : profile.username;
 
       const newUser = {
-        id: uuid(),
+        id: randomUUID(),
         username,
         display_name: profile.name,
         email: profile.email,
         github_id: githubId,
-        password: await encrypt(uuid()),
+        password: await encrypt(randomUUID()),
         favorite_color: uniqolor.random().color,
       };
 

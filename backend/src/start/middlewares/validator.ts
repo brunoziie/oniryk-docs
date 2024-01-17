@@ -10,7 +10,7 @@ export default function ValidatorMiddleware(schema: Schema) {
     };
 
     try {
-      context.request.body = schema.parse(inputs);
+      context.request.inputs = schema.parse(inputs);
       return context.next();
     } catch (err) {
       return withValidationError(context.response, err, 400);

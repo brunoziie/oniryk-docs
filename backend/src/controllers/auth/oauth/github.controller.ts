@@ -7,15 +7,11 @@ import { SessionService } from '@/src/services/auth/session';
 export default class GithubOAuthController {
   static async authorize({ response }: HttpContextContract) {
     const url = GithubService.getAuthorizationUrl();
-    response.redirect(url);
+    withSuccess(response, { authorization_url: url });
   }
 
   static async callback({ request, response, db }: HttpContextContract) {
-    const { code } = request.query;
-
-    if (!code) {
-      throw new Error('Missing code');
-    }
+    const { code } = request.inputs!;
 
     const accessToken = await GithubService.getAccessToken(code as string);
     const profile = await GithubService.getProfile(accessToken);
