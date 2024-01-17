@@ -1,8 +1,8 @@
-import { Schema, ZodError } from 'zod';
 import { MiddlewareContext } from '@app/contracts/http.contract';
-import { withError, withValidationError } from '@app/helpers/http';
+import { withValidationError } from '@app/helpers/http';
+import { Schema } from 'zod';
 
-export default function ValidatorMiddleware(schema: Schema) {
+function ValidatorMiddleware(schema: Schema) {
   return async function (context: MiddlewareContext) {
     const inputs = {
       ...(context.request.body || {}),
@@ -16,4 +16,10 @@ export default function ValidatorMiddleware(schema: Schema) {
       return withValidationError(context.response, err, 400);
     }
   };
+}
+
+export default ValidatorMiddleware;
+
+export function validate(schema: Schema) {
+  return ValidatorMiddleware(schema);
 }

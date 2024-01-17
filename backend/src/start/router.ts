@@ -7,6 +7,7 @@ import {
   RouteMiddlewareContract,
 } from '@app/contracts/http.contract';
 import { withError } from '../helpers/http';
+import path from 'path';
 
 export function route(
   method: RouteMethod,
@@ -32,5 +33,31 @@ export function route(
     });
 
     app[method](path, ...middlewareChain, handler);
+  };
+}
+
+export type GroupContructorFn = (
+  method: RouteMethod,
+  path: string,
+  action: RouteHandler,
+  middlewares?: RouteMiddlewareContract[]
+) => void;
+
+export type GroupOptions = {
+  prefix?: string;
+  middlewares?: RouteMiddlewareContract[];
+};
+
+export function group(fn: (route: GroupContructorFn) => void, options: GroupOptions) {
+  return (injections: RouteInjector) => {
+    fn((method, routePath, action, middlewares) => {
+      const prefix = options.prefix || '';
+      const prefixMiddlewares = options.middlewares || [];
+      const routeMiddlewares = prefixMiddlewares.length
+        ? prefixMiddlewares.concat(middlewares || [])
+        : middlewares;
+
+      route(method, path.join(prefix, routePath), action, routeMiddlewares)(injections);
+    });
   };
 }
