@@ -33,7 +33,7 @@ export default async function start() {
   const app = http({
     setup: (app) => {
       // Setup routes
-      routes.forEach((route) => route({ app, db }));
+      routes.forEach((route) => route({ app }));
 
       // Setup Hocuspocus server
       hocuspocus({ app, db });

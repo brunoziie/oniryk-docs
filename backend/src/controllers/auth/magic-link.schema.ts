@@ -7,3 +7,6 @@ export const store = Zod.object({
 export const login = Zod.object({
   code: Zod.string().min(32).max(32),
 });
+
+export type StorePayload = Zod.infer<typeof store>;
+export type LoginPayload = Zod.infer<typeof login>;

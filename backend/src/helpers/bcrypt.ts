@@ -1,14 +1,14 @@
 import bcrypt from 'bcrypt';
 
 export async function encrypt(value: string) {
-  return await new Promise((resolve, reject) => {
+  return (await new Promise((resolve, reject) => {
     bcrypt.hash(value, 10, function (err, hash) {
       if (err) {
         reject(err);
       }
       resolve(hash);
     });
-  });
+  })) as string;
 }
 
 export async function compare(value: string, hash: string) {

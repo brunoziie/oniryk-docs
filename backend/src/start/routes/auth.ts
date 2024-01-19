@@ -8,13 +8,13 @@ import PasswordController from '@/src/controllers/auth/password.controller';
 import { validate } from '@app/start/middlewares/validator';
 
 // Validation schemas
-import { login, store } from '@app/controllers/auth/magic-link.schemas';
-import { callback } from '@app/controllers/auth/oauth/oauth.schemas';
+import { login, store } from '@/src/controllers/auth/magic-link.schema';
+import { callback } from '@/src/controllers/auth/oauth/oauth.schema';
 import {
   login as loginPassword,
   forgotPassword,
   resetPassword,
-} from '@/src/controllers/auth/password.schemas';
+} from '@/src/controllers/auth/password.schema';
 
 export default [
   group(

@@ -5,7 +5,7 @@ import knex, { Knex } from 'knex';
 declare global {
   namespace Express {
     export interface Request {
-      inputs?: Record<string, any>;
+      payload: unknown;
     }
   }
 }
@@ -19,7 +19,6 @@ export type HttpServerInitializer = (configs: InitializerConfig) => Express;
 export type HttpContextContract = {
   request: Request;
   response: Response;
-  db: Knex;
 };
 
 export type RouteHandler = (params: HttpContextContract) => void | Promise<void>;
@@ -44,12 +43,10 @@ export type RouteMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 export type RouteInjector = {
   app: Express;
-  db: Knex;
 };
 
 export type MiddlewareContext = {
   request: Request;
   response: Response;
   next: NextFunction;
-  db: knex.Knex;
 };

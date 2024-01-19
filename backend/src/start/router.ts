@@ -15,10 +15,10 @@ export function route(
   action: RouteHandler,
   middlewares?: RouteMiddlewareContract[]
 ) {
-  return ({ app, db }: RouteInjector) => {
+  return ({ app }: RouteInjector) => {
     const handler: RouteAction = async (request, response) => {
       try {
-        return await action({ request, response, db });
+        return await action({ request, response });
       } catch (error) {
         withError(response, error);
       }
@@ -26,7 +26,7 @@ export function route(
 
     const middlewareChain = (middlewares || []).map((cur) => {
       const middleware: RouteMiddleware = (request, response, next) => {
-        return cur({ response, request, next, db });
+        return cur({ response, request, next });
       };
 
       return middleware;
