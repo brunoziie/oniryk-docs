@@ -2,7 +2,6 @@ import GoogleService from '@/src/services/auth/google';
 import { SessionService } from '@/src/services/auth/session';
 import { HttpContextContract } from '@app/contracts/http.contract';
 import { withSuccess } from '@app/helpers/http';
-import db from '@app/database/connector';
 import { CallbackPayload } from './oauth.schema';
 
 export default class GoogleOAuthController {
@@ -21,8 +20,8 @@ export default class GoogleOAuthController {
 
     const accessToken = await GoogleService.getAccessToken(code as string);
     const profile = await GoogleService.getProfile(accessToken);
-    const userId = await GoogleService.createOrUpdateUserByGoogleData(db, profile);
-    const session = await SessionService.createSession(db, userId);
+    const userId = await GoogleService.createOrUpdateUserByGoogleData(profile);
+    const session = await SessionService.createSession(userId);
 
     withSuccess(response, { user: session.payload, token: session.token });
   }

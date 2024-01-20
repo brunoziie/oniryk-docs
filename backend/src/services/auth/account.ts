@@ -1,5 +1,5 @@
+import { first, query, update } from '@app/database';
 import { encrypt } from '@/src/helpers/bcrypt';
-import { Knex } from 'knex';
 
 export type UpdatebleUserFields = {
   display_name: string;
@@ -11,15 +11,11 @@ export type UpdatebleUserFields = {
 };
 
 export default class AccountService {
-  static async getUserAccount(db: Knex, userId: string) {
-    return db.from('users').where({ id: userId, deleted_at: null }).first();
+  static async getUserAccount(userId: string) {
+    return first('users', userId);
   }
 
-  static async updateUserAccount(
-    db: Knex,
-    userId: string,
-    data: Partial<UpdatebleUserFields>
-  ) {
+  static async updateUserAccount(userId: string, data: Partial<UpdatebleUserFields>) {
     const toUpdate = {} as Partial<UpdatebleUserFields>;
 
     if (data.display_name) {
@@ -27,7 +23,7 @@ export default class AccountService {
     }
 
     if (data.email) {
-      if (!(await this.canChangeEmail(db, userId, data.email))) {
+      if (!(await this.canChangeEmail(userId, data.email))) {
         toUpdate.email = data.email;
       } else {
         throw new Error('Email already in use');
@@ -50,10 +46,10 @@ export default class AccountService {
       toUpdate.avatar = data.avatar;
     }
 
-    return db.from('users').where({ id: userId, deleted_at: null }).update(data);
+    return update('users', userId, toUpdate);
   }
 
-  static async canChangeEmail(db: Knex, userId: string, email: string) {
-    return !!(await db.from('users').where({ email }).whereNot('id', userId).first());
+  static async canChangeEmail(userId: string, email: string) {
+    return !!(await query('users', { email }).whereNot('id', userId).first());
   }
 }

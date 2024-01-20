@@ -1,9 +1,9 @@
-import env from '@/env';
-import { encrypt } from '@/src/helpers/bcrypt';
 import { randomUUID } from 'crypto';
-import { Knex } from 'knex';
 import { nanoid } from 'nanoid';
 import uniqolor from 'uniqolor';
+import env from '@/env';
+import { encrypt } from '@app/helpers/bcrypt';
+import db, { insert, query, update } from '@app/database';
 
 const GOOGLE_BASE_URL = 'https://accounts.google.com/o/oauth2/v2';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -71,19 +71,19 @@ export default class GoogleService {
     }
   }
 
-  static async createOrUpdateUserByGoogleData(db: Knex, profile: GoogleProfile) {
+  static async createOrUpdateUserByGoogleData(profile: GoogleProfile) {
     if (!profile.verified_email) {
       throw new Error('Google: Email not verified');
     }
 
-    const user = await this.findUserByGoogleIdOrEmail(db, profile.id, profile.email);
+    const user = await this.findUserByGoogleIdOrEmail(profile.id, profile.email);
 
     if (user) {
-      await db('users').where({ id: user.id }).update({ google_id: profile.id });
+      await update('users', user.id, { google_id: profile.id });
       return user.id;
     }
 
-    const newUser = {
+    return await insert('users', {
       id: randomUUID(),
       display_name: profile.name,
       username: `user_${nanoid(8)}`,
@@ -91,17 +91,10 @@ export default class GoogleService {
       google_id: profile.id,
       password: await encrypt(randomUUID()),
       favorite_color: uniqolor.random().color,
-    };
-
-    await db('users').insert(newUser);
-    return newUser.id;
+    });
   }
 
-  static async findUserByGoogleIdOrEmail(db: Knex, googleId: string, email: string) {
-    return await db('users')
-      .where({ google_id: googleId })
-      .orWhere({ email })
-      .whereNull('deleted_at')
-      .first();
+  static async findUserByGoogleIdOrEmail(googleId: string, email: string) {
+    return await query('users', { google_id: googleId }).orWhere({ email }).first();
   }
 }

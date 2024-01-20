@@ -2,29 +2,28 @@ import { Knex } from 'knex';
 import { nanoid } from 'nanoid';
 import ms from 'ms';
 import { MailerService } from '../core/mailer';
-import MagicLinkMail, { MagicLinkEmailProps } from '@/src/resources/emails/magic-link';
-import { randomUUID } from 'crypto';
+import MagicLinkMail, { MagicLinkEmailProps } from '@app/resources/emails/magic-link';
+import db, { firstBy, insert, query, remove, update } from '@app/database';
 
 export type UserId = string;
 
 const CODE_LENGTH = 32;
 
 export default class MagicLinkService {
-  static async sendMagicLink(db: Knex, email: string) {
-    const user = await db('users').where({ email, deleted_at: null }).first();
+  static async sendMagicLink(email: string) {
+    const user = await firstBy('users', { email });
 
     if (!user) {
       throw new Error('Auth: User not found');
     }
 
     const magicLink = {
-      id: randomUUID(),
       user_id: user.id,
       code: nanoid(CODE_LENGTH),
       expires_at: new Date(Date.now() + ms('10 minutes')),
     };
 
-    await db('magic_links').insert(magicLink);
+    await insert('magic_links', magicLink);
 
     await MailerService.send<typeof MagicLinkMail, MagicLinkEmailProps>(
       {
@@ -41,9 +40,8 @@ export default class MagicLinkService {
     return magicLink;
   }
 
-  static async findMagicLink(db: Knex, code: string) {
-    const link = await db('magic_links')
-      .where({ code, deleted_at: null })
+  static async findMagicLink(code: string) {
+    const link = await query('magic_links', { code })
       .andWhere('expires_at', '>', new Date())
       .first();
 
@@ -54,9 +52,12 @@ export default class MagicLinkService {
     return link;
   }
 
-  static async validateMagicLink(db: Knex, code: string) {
-    const { id, user_id: userId } = await this.findMagicLink(db, code);
+  static async validateMagicLink(code: string) {
+    const { id, user_id: userId } = await this.findMagicLink(code);
+
     await db('magic_links').where({ id }).update({ deleted_at: new Date() });
+    await remove('magic_links', id);
+
     return userId as UserId;
   }
 }

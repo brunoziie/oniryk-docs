@@ -1,9 +1,9 @@
-import { Knex } from 'knex';
+import { firstOrFail } from '@app/database';
 import JwtService from './jwt';
 
 export class SessionService {
-  static async createSession(db: Knex, userId: string) {
-    const user = await db('users').where('id', userId).whereNull('deleted_at').first();
+  static async createSession(userId: string) {
+    const user = await firstOrFail('users', userId);
 
     if (!user) {
       throw new Error('User not found');

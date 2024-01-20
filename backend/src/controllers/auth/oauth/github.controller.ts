@@ -4,7 +4,6 @@ import GithubService from '@/src/services/auth/github';
 import JwtService from '@/src/services/auth/jwt';
 import { SessionService } from '@/src/services/auth/session';
 
-import db from '@app/database/connector';
 import { CallbackPayload } from './oauth.schema';
 
 export default class GithubOAuthController {
@@ -24,8 +23,8 @@ export default class GithubOAuthController {
       throw new Error('GitHub: Email not verified');
     }
 
-    const userId = await GithubService.createOrUpdateUserByGithubData(db, profile);
-    const session = await SessionService.createSession(db, userId);
+    const userId = await GithubService.createOrUpdateUserByGithubData(profile);
+    const session = await SessionService.createSession(userId);
 
     withSuccess(response, { user: session.payload, token: session.token });
   }

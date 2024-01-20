@@ -1,9 +1,9 @@
-import env from '@/env';
-import { encrypt } from '@app/helpers/bcrypt';
 import { randomUUID } from 'crypto';
-import { Knex } from 'knex';
 import { nanoid } from 'nanoid';
 import uniqolor from 'uniqolor';
+import env from '@/env';
+import { firstBy, insert, query, update } from '@app/database';
+import { encrypt } from '@app/helpers/bcrypt';
 
 const GH_BASE = 'https://github.com/login/oauth';
 const GH_SCOPES = ['user:email', 'read:user'];
@@ -78,46 +78,39 @@ export default class GithubService {
     return data.find((e: any) => e.email === email && e.verified);
   }
 
-  static async createOrUpdateUserByGithubData(db: Knex, profile: GithubProfile) {
+  static async createOrUpdateUserByGithubData(profile: GithubProfile) {
     const githubId = profile.id.toString();
-    const user = await this.findUserByGithubIdOrEmail(db, githubId, profile.email);
+    const user = await this.findUserByGithubIdOrEmail(githubId, profile.email);
 
     if (user) {
       if (user.github_id !== githubId) {
         user.github_id = githubId;
-        await db('users').where({ id: user.id }).update({ github_id: githubId });
+        await update('users', user.id, { github_id: githubId });
       }
 
       return user.id as string;
     } else {
-      const username = (await this.isUsernameInUse(db, profile.username))
+      const username = (await this.isUsernameInUse(profile.username))
         ? `user_${nanoid(8)}`
         : profile.username;
 
-      const newUser = {
-        id: randomUUID(),
+      return await insert('users', {
         username,
         display_name: profile.name,
         email: profile.email,
         github_id: githubId,
         password: await encrypt(randomUUID()),
         favorite_color: uniqolor.random().color,
-      };
-
-      await db('users').insert(newUser);
-      return newUser.id as string;
+      });
     }
   }
 
-  static async findUserByGithubIdOrEmail(db: Knex, githubId: string, email: string) {
-    return await db('users')
-      .where({ github_id: githubId })
-      .orWhere({ email, deleted_at: null })
-      .first();
+  static async findUserByGithubIdOrEmail(githubId: string, email: string) {
+    return await query('users', { github_id: githubId }).orWhere({ email }).first();
   }
 
-  static async isUsernameInUse(db: Knex, username: string) {
-    const user = await db('users').where({ username, deleted_at: null }).first();
+  static async isUsernameInUse(username: string) {
+    const user = await firstBy('users', { username, deleted_at: null });
     return !!user;
   }
 }
