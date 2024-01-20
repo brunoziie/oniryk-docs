@@ -1,10 +1,11 @@
 import express, { Request, Response } from 'express';
 import { HttpServerInitializer } from '@app/contracts/http.contract';
 import { withError } from '@app/helpers/http';
-import db from '@app/database/connector';
 import routes from '@app/start/routes';
 import env from '@/env';
 import hocuspocus from '@app/start/hocuspocus';
+import PayloadMiddleware from '@app/start/middlewares/payload';
+import prisma from './database';
 
 const http: HttpServerInitializer = ({ setup }) => {
   const app = express();
@@ -18,12 +19,11 @@ const http: HttpServerInitializer = ({ setup }) => {
   });
 
   app.use((err: Error, req: Request, res: Response) => {
-    console.error('dsaddasda');
     withError(res, err);
   });
 
   app.listen(env.PORT, () => {
-    console.log(`Server is listening on port ${env.PORT}`);
+    console.log(`running @ 0.0.0.0:${env.PORT} 🚀`);
   });
 
   return app;
@@ -32,13 +32,28 @@ const http: HttpServerInitializer = ({ setup }) => {
 export default async function start() {
   const app = http({
     setup: (app) => {
+      app.use((request, response, next) => {
+        return PayloadMiddleware({ request, response, next });
+      });
+
       // Setup routes
       routes.forEach((route) => route({ app }));
 
       // Setup Hocuspocus server
-      hocuspocus({ app, db });
+      hocuspocus({ app });
     },
   });
 
   return app;
 }
+
+process.on('uncaughtException', (err) => {
+  console.error(
+    `[UncaughtException :: Shutting down server] -> {\n\n${err.stack
+      ?.split('\n')
+      .map((line) => `   ${line.replace(/^\s+/, '  ')}`)
+      .join('\n')}\n\n}`
+  );
+  prisma.$disconnect();
+  process.exit(1);
+});

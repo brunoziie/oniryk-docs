@@ -2,7 +2,7 @@ import GoogleService from '@/src/services/auth/google';
 import { SessionService } from '@/src/services/auth/session';
 import { HttpContextContract } from '@app/contracts/http.contract';
 import { withSuccess } from '@app/helpers/http';
-import { CallbackPayload } from './oauth.schema';
+import { CallbackPayload } from '../../../schemas/auth/oauth.schema';
 
 export default class GoogleOAuthController {
   static async authorize({ response }: HttpContextContract) {

@@ -1,25 +1,32 @@
-import { first, query, update } from '@app/database';
-import { encrypt } from '@/src/helpers/bcrypt';
+import { PrismaClient } from '@prisma/client';
+import { encrypt } from '@app/helpers/bcrypt';
+
+const prisma = new PrismaClient();
 
 export type UpdatebleUserFields = {
-  display_name: string;
+  displayName: string;
   email: string;
   password: string;
   username: string;
-  favorite_color: string;
+  favoriteColor: string;
   avatar: string;
 };
 
 export default class AccountService {
   static async getUserAccount(userId: string) {
-    return first('users', userId);
+    return prisma.user.findUnique({
+      where: {
+        id: userId,
+        deletedAt: null,
+      },
+    });
   }
 
   static async updateUserAccount(userId: string, data: Partial<UpdatebleUserFields>) {
     const toUpdate = {} as Partial<UpdatebleUserFields>;
 
-    if (data.display_name) {
-      toUpdate.display_name = data.display_name;
+    if (data.displayName) {
+      toUpdate.displayName = data.displayName;
     }
 
     if (data.email) {
@@ -38,18 +45,32 @@ export default class AccountService {
       toUpdate.username = data.username;
     }
 
-    if (data.favorite_color) {
-      toUpdate.favorite_color = data.favorite_color;
+    if (data.favoriteColor) {
+      toUpdate.favoriteColor = data.favoriteColor;
     }
 
     if (data.avatar) {
       toUpdate.avatar = data.avatar;
     }
 
-    return update('users', userId, toUpdate);
+    return prisma.user.update({
+      where: {
+        id: userId,
+        deletedAt: null,
+      },
+      data: toUpdate,
+    });
   }
 
   static async canChangeEmail(userId: string, email: string) {
-    return !!(await query('users', { email }).whereNot('id', userId).first());
+    return !!(await prisma.user.findFirst({
+      where: {
+        email: email,
+        deletedAt: null,
+        NOT: {
+          id: userId,
+        },
+      },
+    }));
   }
 }

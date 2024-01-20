@@ -2,8 +2,8 @@ import { randomUUID } from 'crypto';
 import { nanoid } from 'nanoid';
 import uniqolor from 'uniqolor';
 import env from '@/env';
-import { firstBy, insert, query, update } from '@app/database';
 import { encrypt } from '@app/helpers/bcrypt';
+import prisma from '@app/start/database';
 
 const GH_BASE = 'https://github.com/login/oauth';
 const GH_SCOPES = ['user:email', 'read:user'];
@@ -37,9 +37,25 @@ export default class GithubService {
         }),
       });
 
+      if (req.status !== 200) {
+        throw new Error('GitHub: Failed to fetch access token');
+      }
+
       const res = await req.json();
+      const token = res.access_token;
+
+      if (!token) {
+        throw new Error(
+          `GitHub: ${res.error_description || 'Failed to fetch access token'}`
+        );
+      }
+
       return res.access_token;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.message && error.message.startsWith('GitHub:')) {
+        throw error;
+      }
+
       throw new Error('GitHub: Failed to fetch access token');
     }
   }
@@ -80,12 +96,18 @@ export default class GithubService {
 
   static async createOrUpdateUserByGithubData(profile: GithubProfile) {
     const githubId = profile.id.toString();
-    const user = await this.findUserByGithubIdOrEmail(githubId, profile.email);
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ githubId }, { email: profile.email }],
+      },
+    });
 
     if (user) {
-      if (user.github_id !== githubId) {
-        user.github_id = githubId;
-        await update('users', user.id, { github_id: githubId });
+      if (user.githubId !== githubId) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { githubId },
+        });
       }
 
       return user.id as string;
@@ -94,23 +116,29 @@ export default class GithubService {
         ? `user_${nanoid(8)}`
         : profile.username;
 
-      return await insert('users', {
-        username,
-        display_name: profile.name,
-        email: profile.email,
-        github_id: githubId,
-        password: await encrypt(randomUUID()),
-        favorite_color: uniqolor.random().color,
+      const newUser = await prisma.user.create({
+        data: {
+          username,
+          displayName: profile.name,
+          email: profile.email,
+          githubId,
+          password: await encrypt(randomUUID()),
+          favoriteColor: uniqolor.random().color,
+        },
       });
+
+      return newUser.id as string;
     }
   }
 
-  static async findUserByGithubIdOrEmail(githubId: string, email: string) {
-    return await query('users', { github_id: githubId }).orWhere({ email }).first();
-  }
-
   static async isUsernameInUse(username: string) {
-    const user = await firstBy('users', { username, deleted_at: null });
+    const user = await prisma.user.findFirst({
+      where: {
+        username,
+        deletedAt: null,
+      },
+    });
+
     return !!user;
   }
 }

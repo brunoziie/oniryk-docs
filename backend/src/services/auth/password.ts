@@ -2,7 +2,9 @@ import { encrypt, compare } from '@app/helpers/bcrypt';
 import { nanoid } from 'nanoid';
 import ms from 'ms';
 import { MailerService } from '../core/mailer';
-import db, { insert, firstBy, query, remove, update } from '@app/database';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 import ResetPasswordEmail, {
   ResetPasswordEmailProps,
@@ -10,7 +12,7 @@ import ResetPasswordEmail, {
 
 export class PasswordService {
   static async login(email: string, password: string) {
-    const user = await firstBy('users', { email });
+    const user = await prisma.user.findFirst({ where: { email } });
 
     if (!user) {
       throw new Error('Auth: Invalid credentials');
@@ -26,7 +28,7 @@ export class PasswordService {
   }
 
   static async forgot(email: string) {
-    const user = await db('users').where({ email, deleted_at: null }).first();
+    const user = await prisma.user.findFirst({ where: { email, deletedAt: null } });
 
     if (!user) {
       throw new Error('Auth: Invalid user email');
@@ -34,10 +36,12 @@ export class PasswordService {
 
     const code = nanoid(64);
 
-    await insert('users', {
-      user_id: user.id,
-      code,
-      expires_at: new Date(Date.now() + ms('10 minutes')),
+    await prisma.passwordRecovery.create({
+      data: {
+        userId: user.id,
+        code,
+        expiresAt: new Date(Date.now() + ms('10 minutes')),
+      },
     });
 
     MailerService.sendLater<typeof ResetPasswordEmail, ResetPasswordEmailProps>(
@@ -46,24 +50,25 @@ export class PasswordService {
         subject: 'Password recovery',
       },
       ResetPasswordEmail,
-      { code, name: user.display_name.split(' ')[0] }
+      { code, name: user.displayName.split(' ')[0] }
     );
   }
 
   static async reset(code: string, password: string) {
-    const recovery = await query('password_recoveries', { code })
-      .andWhere('expires_at', '>', new Date())
-      .first();
+    const recovery = await prisma.passwordRecovery.findFirst({
+      where: { code, expiresAt: { gt: new Date() } },
+    });
 
     if (!recovery) {
       throw new Error('Auth: Invalid and/or expired recovery code');
     }
 
-    const { id, user_id: userId } = recovery;
+    const { id, userId } = recovery;
 
-    await remove('password_recoveries', id);
-    await update('users', userId, {
-      password: await encrypt(password),
+    await prisma.passwordRecovery.delete({ where: { id } });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: await encrypt(password) },
     });
   }
 }

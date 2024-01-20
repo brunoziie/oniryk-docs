@@ -4,7 +4,7 @@ import GithubService from '@/src/services/auth/github';
 import JwtService from '@/src/services/auth/jwt';
 import { SessionService } from '@/src/services/auth/session';
 
-import { CallbackPayload } from './oauth.schema';
+import { CallbackPayload } from '../../../schemas/auth/oauth.schema';
 
 export default class GithubOAuthController {
   static async authorize({ response }: HttpContextContract) {
@@ -14,7 +14,6 @@ export default class GithubOAuthController {
 
   static async callback({ request, response }: HttpContextContract) {
     const { code } = request.payload as CallbackPayload;
-
     const accessToken = await GithubService.getAccessToken(code as string);
     const profile = await GithubService.getProfile(accessToken);
     const verified = await GithubService.isEmailVerified(accessToken, profile.email);

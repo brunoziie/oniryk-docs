@@ -1,12 +1,13 @@
 import zod from 'zod';
 import dotenv from 'dotenv';
 import parser from 'dotenv-parse-variables';
-import path = require('path');
+import { expand } from 'dotenv-expand';
 
-const original = dotenv.config({ path: path.resolve(__dirname, '.env') });
+const original = expand(dotenv.config());
 
 const schema = zod.object({
   NODE_ENV: zod.enum(['development', 'production']).default('development'),
+  BASE_URL: zod.string().url(),
   PORT: zod.number().default(3000),
   DEBUG: zod.boolean().default(false), // will be ignored if NODE_ENV is not 'development'
   FRONTEND_URL: zod.string().url(),

@@ -6,7 +6,7 @@ import {
   LoginPayload,
   ForgotPasswordPayload,
   ResetPasswordPayload,
-} from './password.schema';
+} from '../../schemas/auth/password.schema';
 
 export default class PasswordController {
   static async login({ request, response }: HttpContextContract) {

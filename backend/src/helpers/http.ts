@@ -1,15 +1,18 @@
 import type { Response } from 'express';
+import { snakeifyObjectKeys } from './inflection';
 
 export function withSuccess(
   response: Response,
   data: any = null,
   statusCode: number = 200
 ) {
-  response.status(statusCode).json({
+  const payload = snakeifyObjectKeys({
     status: 'OK',
     data,
     error: null,
   });
+
+  response.status(statusCode).json(payload);
 }
 
 export function withError(response: Response, error: any, statusCode: number = 500) {
@@ -18,7 +21,9 @@ export function withError(response: Response, error: any, statusCode: number = 5
     data: null,
     error: {
       message: error.message,
-      ...(process.env.NODE_ENV === 'development' ? { stack: error.stack } : {}),
+      ...(process.env.NODE_ENV === 'development'
+        ? { stack: error.stack.split(/\n/) }
+        : {}),
     },
   });
 }

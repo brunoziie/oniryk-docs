@@ -1,9 +1,13 @@
-import { firstOrFail } from '@app/database';
+import { PrismaClient } from '@prisma/client';
 import JwtService from './jwt';
+
+const prisma = new PrismaClient();
 
 export class SessionService {
   static async createSession(userId: string) {
-    const user = await firstOrFail('users', userId);
+    const user = await prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+    });
 
     if (!user) {
       throw new Error('User not found');
@@ -11,9 +15,9 @@ export class SessionService {
 
     const payload = {
       id: user.id,
-      name: user.display_name,
+      name: user.displayName,
       username: user.username,
-      favorite_color: user.favorite_color,
+      favorite_color: user.favoriteColor,
     };
 
     const token = JwtService.sign(payload);

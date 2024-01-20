@@ -1,12 +1,12 @@
 import { Server } from '@hocuspocus/server';
 import { Database } from '@hocuspocus/extension-database';
 import { Express } from 'express';
-import { Knex } from 'knex';
 import ws from 'express-ws';
 import DocumentSocketService from '../services/documents/socket';
 import JwtService from '../services/auth/jwt';
+import prisma from './database';
 
-const setup = ({ app, db }: { app: Express; db: Knex }) => {
+const setup = ({ app }: { app: Express }) => {
   const server = Server.configure({
     async onAuthenticate({ token }) {
       await JwtService.verify(token);
@@ -15,23 +15,26 @@ const setup = ({ app, db }: { app: Express; db: Knex }) => {
     extensions: [
       new Database({
         async fetch({ documentName }) {
-          const document = await db('documents').where({ id: documentName }).first();
+          const document = await prisma.document.findUnique({
+            where: { id: documentName },
+          });
 
-          if (document && document.binary_content) {
-            return document.binary_content;
+          if (document && document.binaryContent) {
+            return document.binaryContent;
           }
 
           return null;
         },
 
         async store({ documentName, state }) {
-          await db('documents')
-            .where({ id: documentName })
-            .update({
-              binary_content: state,
+          await prisma.document.update({
+            where: { id: documentName },
+            data: {
+              binaryContent: state,
               content: DocumentSocketService.transformToHtml(state),
-              updated_at: new Date(),
-            });
+              updatedAt: new Date(),
+            },
+          });
         },
       }),
     ],

@@ -1,9 +1,8 @@
-import { Knex } from 'knex';
+import prisma from '@app/start/database';
 import { nanoid } from 'nanoid';
 import ms from 'ms';
 import { MailerService } from '../core/mailer';
 import MagicLinkMail, { MagicLinkEmailProps } from '@app/resources/emails/magic-link';
-import db, { firstBy, insert, query, remove, update } from '@app/database';
 
 export type UserId = string;
 
@@ -11,19 +10,19 @@ const CODE_LENGTH = 32;
 
 export default class MagicLinkService {
   static async sendMagicLink(email: string) {
-    const user = await firstBy('users', { email });
+    const user = await prisma.user.findFirst({ where: { email, deletedAt: null } });
 
     if (!user) {
       throw new Error('Auth: User not found');
     }
 
     const magicLink = {
-      user_id: user.id,
+      userId: user.id,
       code: nanoid(CODE_LENGTH),
-      expires_at: new Date(Date.now() + ms('10 minutes')),
+      expiresAt: new Date(Date.now() + ms('10 minutes')),
     };
 
-    await insert('magic_links', magicLink);
+    await prisma.magicLink.create({ data: magicLink });
 
     await MailerService.send<typeof MagicLinkMail, MagicLinkEmailProps>(
       {
@@ -32,7 +31,7 @@ export default class MagicLinkService {
       },
       MagicLinkMail,
       {
-        name: user.display_name.split(' ').shift(),
+        name: user.displayName.split(' ')[0],
         code: magicLink.code,
       }
     );
@@ -41,9 +40,14 @@ export default class MagicLinkService {
   }
 
   static async findMagicLink(code: string) {
-    const link = await query('magic_links', { code })
-      .andWhere('expires_at', '>', new Date())
-      .first();
+    const link = await prisma.magicLink.findFirst({
+      where: {
+        code,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
 
     if (!link) {
       throw new Error('Auth: Invalid and/or expired magic link');
@@ -53,10 +57,12 @@ export default class MagicLinkService {
   }
 
   static async validateMagicLink(code: string) {
-    const { id, user_id: userId } = await this.findMagicLink(code);
+    const { id, userId } = await this.findMagicLink(code);
 
-    await db('magic_links').where({ id }).update({ deleted_at: new Date() });
-    await remove('magic_links', id);
+    await prisma.magicLink.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
 
     return userId as UserId;
   }

@@ -1,7 +1,7 @@
 import { group } from '@app/start/router';
 import AccountController from '@app/controllers/account.controller';
 import { validate } from '@app/start/middlewares/validator';
-import { updateAccount } from '@/src/controllers/account.schema';
+import { updateAccount } from '@/src/schemas/auth/account.schema';
 import AuthMiddleware from '@app/start/middlewares/auth';
 
 export default [

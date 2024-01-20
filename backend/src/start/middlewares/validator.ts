@@ -4,13 +4,8 @@ import { Schema } from 'zod';
 
 function ValidatorMiddleware(schema: Schema) {
   return async function (context: MiddlewareContext) {
-    const inputs = {
-      ...(context.request.body || {}),
-      ...(context.request.query || {}),
-    };
-
     try {
-      context.request.payload = schema.parse(inputs);
+      context.request.payload = schema.parse(context.request.payload);
       return context.next();
     } catch (err) {
       return withValidationError(context.response, err, 400);

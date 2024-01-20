@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import uniqolor from 'uniqolor';
 import env from '@/env';
 import { encrypt } from '@app/helpers/bcrypt';
-import db, { insert, query, update } from '@app/database';
+import prisma from '@app/start/database';
 
 const GOOGLE_BASE_URL = 'https://accounts.google.com/o/oauth2/v2';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -76,25 +76,34 @@ export default class GoogleService {
       throw new Error('Google: Email not verified');
     }
 
-    const user = await this.findUserByGoogleIdOrEmail(profile.id, profile.email);
+    const { id: googleId, email } = profile;
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ googleId }, { email }],
+      },
+    });
 
     if (user) {
-      await update('users', user.id, { google_id: profile.id });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { googleId: profile.id },
+      });
+
       return user.id;
     }
 
-    return await insert('users', {
-      id: randomUUID(),
-      display_name: profile.name,
-      username: `user_${nanoid(8)}`,
-      email: profile.email,
-      google_id: profile.id,
-      password: await encrypt(randomUUID()),
-      favorite_color: uniqolor.random().color,
-    });
-  }
-
-  static async findUserByGoogleIdOrEmail(googleId: string, email: string) {
-    return await query('users', { google_id: googleId }).orWhere({ email }).first();
+    return (
+      await prisma.user.create({
+        data: {
+          displayName: profile.name,
+          username: `user_${nanoid(8)}`,
+          email: profile.email,
+          googleId: profile.id,
+          password: await encrypt(randomUUID()),
+          favoriteColor: uniqolor.random().color,
+        },
+      })
+    ).id;
   }
 }
