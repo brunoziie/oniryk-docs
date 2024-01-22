@@ -1,7 +1,6 @@
 import { HttpContextContract } from '@app/contracts/http.contract';
 import { withSuccess } from '@app/helpers/http';
 import GithubService from '@/src/services/auth/github';
-import JwtService from '@/src/services/auth/jwt';
 import { SessionService } from '@/src/services/auth/session';
 
 import { CallbackPayload } from '../../../schemas/auth/oauth.schema';
