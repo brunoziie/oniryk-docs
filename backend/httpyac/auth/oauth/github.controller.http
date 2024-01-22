@@ -1,0 +1,8 @@
+###
+# @description: Generate GitHub OAuth URL
+GET {{BASE_URL}}/auth/oauth/github/authorize
+
+###
+# @description: Get GitHub OAuth token using code
+@code = {{$input GitHub OAuth code}}
+GET {{BASE_URL}}/auth/oauth/github/callback?code={{code}}

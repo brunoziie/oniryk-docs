@@ -1,0 +1,20 @@
+# @import ./auth/password.http
+
+###
+# @description Update user fields
+# @ref passwordLogin
+PUT {{BASE_URL}}/account/me
+Authorization: Bearer {{passwordLogin.data.token}}
+Content-Type: application/json
+
+{ 
+  "display_name": "teo",
+  "password": "secret" 
+}
+
+###
+# @description Get user fields
+# @ref passwordLogin
+GET {{BASE_URL}}/account/me
+Authorization: Bearer {{passwordLogin.data.token}}
+

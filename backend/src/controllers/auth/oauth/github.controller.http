@@ -1,7 +1,0 @@
-
-GET {{$dotenv BASE_URL}}/auth/oauth/github/authorize
-
-###
-
-# @prompt code 
-GET {{$dotenv BASE_URL}}/auth/oauth/github/callback?code={{code}}

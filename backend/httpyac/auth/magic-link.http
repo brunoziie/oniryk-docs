@@ -1,0 +1,16 @@
+###
+# @desciption Send a magic link to the user's email
+POST {{BASE_URL}}/auth/magic-link
+Content-Type: application/json
+{
+  "email": "eu@brunoziie.com"
+}
+
+###
+# @description Login with a magic link code
+@code = {{$input Magic link code}}
+POST {{BASE_URL}}/auth/magic-link/login
+Content-Type: application/json
+{
+  "code": "{{ code }}"
+}
