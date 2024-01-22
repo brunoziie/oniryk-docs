@@ -11,6 +11,9 @@
     "db:migrate": "npx prisma migrate dev",
     "db:deploy": "npx prisma migrate deploy"
   },
+  "prisma": {
+    "seed": "ts-node-dev -r tsconfig-paths/register prisma/seed.ts"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
