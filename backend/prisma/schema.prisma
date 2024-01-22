@@ -7,16 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Document {
-  id             String    @db.VarChar(36) @id @default(uuid())
-  title          String    @db.VarChar(255)
-  content        String?   @db.LongText
-  binaryContent  Bytes?    @db.Blob @map("binary_content")
-  createdAt      DateTime  @default(now()) @db.Timestamp(0) @map("created_at")
-  updatedAt      DateTime  @default(now()) @db.Timestamp(0) @map("updated_at")
-  deletedAt      DateTime? @db.Timestamp(0) @map("deleted_at")
+model User {
+  id                  String             @db.VarChar(36) @id @default(uuid())
+  username            String             @db.VarChar(255)
+  displayName         String             @db.VarChar(255) @map("display_name")
+  email               String             @db.VarChar(255)
+  password            String             @db.VarChar(255)
+  avatar              String?            @db.VarChar(255)
+  favoriteColor       String?            @db.VarChar(7) @map("favorite_color")
+  createdAt           DateTime?          @default(now()) @db.DateTime(0) @map("created_at")
+  updatedAt           DateTime?          @default(now()) @db.DateTime(0) @map("updated_at")
+  deletedAt           DateTime?          @db.Timestamp(0) @map("deleted_at")
+  githubId            String?            @db.VarChar(255) @map("github_id")
+  googleId            String?            @db.VarChar(255) @map("google_id")
+  magicLinks          MagicLink[]
+  passwordRecoveries  PasswordRecovery[]
 
-  @@map("documents")
+  @@map("users")
 }
 
 model MagicLink {
@@ -47,21 +54,15 @@ model PasswordRecovery {
   @@index([userId], map: "password_recoveries_user_id_foreign")
 }
 
-model User {
-  id                  String             @db.VarChar(36) @id @default(uuid())
-  username            String             @db.VarChar(255)
-  displayName         String             @db.VarChar(255) @map("display_name")
-  email               String             @db.VarChar(255)
-  password            String             @db.VarChar(255)
-  avatar              String?            @db.VarChar(255)
-  favoriteColor       String?            @db.VarChar(7) @map("favorite_color")
-  createdAt           DateTime?          @db.DateTime(0) @map("created_at")
-  updatedAt           DateTime?          @db.DateTime(0) @map("updated_at")
-  deletedAt           DateTime?          @db.Timestamp(0) @map("deleted_at")
-  githubId            String?            @db.VarChar(255) @map("github_id")
-  googleId            String?            @db.VarChar(255) @map("google_id")
-  magicLinks          MagicLink[]
-  passwordRecoveries  PasswordRecovery[]
 
-  @@map("users")
+model Document {
+  id             String    @db.VarChar(36) @id @default(uuid())
+  title          String    @db.VarChar(255)
+  content        String?   @db.LongText
+  binaryContent  Bytes?    @db.Blob @map("binary_content")
+  createdAt      DateTime  @default(now()) @db.Timestamp(0) @map("created_at")
+  updatedAt      DateTime  @default(now()) @db.Timestamp(0) @map("updated_at")
+  deletedAt      DateTime? @db.Timestamp(0) @map("deleted_at")
+
+  @@map("documents")
 }
