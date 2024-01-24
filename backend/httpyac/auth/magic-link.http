@@ -3,7 +3,7 @@
 POST {{BASE_URL}}/auth/magic-link
 Content-Type: application/json
 {
-  "email": "eu@brunoziie.com"
+  "email": "teo@oniryk.dev"
 }
 
 ###

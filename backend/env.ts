@@ -22,6 +22,7 @@ const schema = zod.object({
   // Mailer
   MAILER_SMTP_URL: zod.string().url(),
   MAILER_FROM: zod.string(),
+  MAILER_USE_MAILDEV: zod.boolean().default(false),
 
   // OAuth
   GITHUB_CLIENT_ID: zod.string(),

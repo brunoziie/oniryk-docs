@@ -10,7 +10,12 @@ export type MailerOptions = {
   subject: string;
 };
 
-const transporter = createTransport(env.MAILER_SMTP_URL);
+const url =
+  env.MAILER_USE_MAILDEV && env.NODE_ENV === 'development'
+    ? 'smtp://user:pass@127.0.0.1:1025'
+    : env.MAILER_SMTP_URL;
+
+const transporter = createTransport(url);
 
 export class MailerService {
   static async send<T, P>({ from, ...options }: MailerOptions, view: T, data: P) {

@@ -6,6 +6,7 @@ import env from '@/env';
 import hocuspocus from '@app/start/hocuspocus';
 import PayloadMiddleware from '@app/start/middlewares/payload';
 import prisma from './database';
+import mailer from './mailer';
 
 const http: HttpServerInitializer = ({ setup }) => {
   const app = express();
@@ -23,7 +24,7 @@ const http: HttpServerInitializer = ({ setup }) => {
   });
 
   app.listen(env.PORT, () => {
-    console.log(`running @ 0.0.0.0:${env.PORT} 🚀`);
+    console.log(`🤖 running @ 0.0.0.0:${env.PORT}`);
   });
 
   return app;
@@ -47,13 +48,19 @@ export default async function start() {
   return app;
 }
 
+// Setup mailer
+const maildev = mailer();
+
 process.on('uncaughtException', (err) => {
+  prisma.$disconnect();
+  maildev?.close();
+
   console.error(
     `[UncaughtException :: Shutting down server] -> {\n\n${err.stack
       ?.split('\n')
       .map((line) => `   ${line.replace(/^\s+/, '  ')}`)
       .join('\n')}\n\n}`
   );
-  prisma.$disconnect();
+
   process.exit(1);
 });
