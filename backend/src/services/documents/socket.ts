@@ -6,6 +6,7 @@ import TableRow from '@tiptap/extension-table-row';
 import { generateHTML } from '@tiptap/html';
 import * as Y from 'yjs';
 import { TiptapTransformer } from '@hocuspocus/transformer';
+import { convert } from 'html-to-text';
 
 const EXTENSIONS = [StarterKit, Table, TableHeader, TableRow, TableCell];
 
@@ -22,5 +23,25 @@ export default class DocumentSocketService {
     const html = generateHTML(tiptapTransformer.default, EXTENSIONS);
 
     return html;
+  }
+
+  static transformToSearchableText(html: string) {
+    const text = convert(html, {
+      selectors: [{ selector: 'a', format: 'skip' }],
+    });
+
+    const sanitized = text
+      .replace(/\s+|\t|\n/g, ' ')
+      .replace(/[\.,?!]/g, '')
+      .toLowerCase();
+
+    const words = sanitized
+      .split(' ')
+      .filter(Boolean)
+      .filter((c) => c.length > 2);
+
+    const uniqueWords = [...new Set(words)];
+
+    return uniqueWords.join(' ');
   }
 }

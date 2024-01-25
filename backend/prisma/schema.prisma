@@ -1,67 +1,132 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model User {
-  id                  String             @db.VarChar(36) @id @default(uuid())
-  username            String             @db.VarChar(255)
-  displayName         String             @db.VarChar(255) @map("display_name")
-  email               String             @db.VarChar(255)
-  password            String             @db.VarChar(255)
-  avatar              String?            @db.VarChar(255)
-  favoriteColor       String?            @db.VarChar(7) @map("favorite_color")
-  createdAt           DateTime?          @default(now()) @db.DateTime(0) @map("created_at")
-  updatedAt           DateTime?          @default(now()) @db.DateTime(0) @map("updated_at")
-  deletedAt           DateTime?          @db.Timestamp(0) @map("deleted_at")
-  githubId            String?            @db.VarChar(255) @map("github_id")
-  googleId            String?            @db.VarChar(255) @map("google_id")
-  magicLinks          MagicLink[]
-  passwordRecoveries  PasswordRecovery[]
+  id                 String             @id @default(uuid()) @db.VarChar(36)
+  username           String             @db.VarChar(255)
+  displayName        String             @map("display_name") @db.VarChar(255)
+  email              String             @db.VarChar(255)
+  password           String             @db.VarChar(255)
+  avatar             String?            @db.VarChar(255)
+  favoriteColor      String?            @map("favorite_color") @db.VarChar(7)
+  createdAt          DateTime?          @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt          DateTime?          @default(now()) @map("updated_at") @db.DateTime(0)
+  deletedAt          DateTime?          @map("deleted_at") @db.Timestamp(0)
+  githubId           String?            @map("github_id") @db.VarChar(255)
+  googleId           String?            @map("google_id") @db.VarChar(255)
+  magicLinks         MagicLink[]
+  passwordRecoveries PasswordRecovery[]
+  Ownership          Ownership[]
 
+  @@fulltext([displayName])
+  @@fulltext([username, displayName, email])
   @@map("users")
 }
 
 model MagicLink {
-  id        String    @db.VarChar(36) @id @default(uuid())
-  userId    String    @db.VarChar(36) @map("user_id")
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  userId    String    @map("user_id") @db.VarChar(36)
   code      String    @db.VarChar(32)
-  expiresAt DateTime  @default(now()) @db.Timestamp(0) @map("expires_at")
-  createdAt DateTime  @default(now()) @db.Timestamp(0) @map("created_at")
-  updatedAt DateTime  @default(now()) @db.Timestamp(0) @map("updated_at")
-  deletedAt DateTime? @db.Timestamp(0) @map("deleted_at")
+  expiresAt DateTime  @default(now()) @map("expires_at") @db.Timestamp(0)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(0)
   users     User      @relation(fields: [userId], references: [id], onUpdate: Restrict, map: "magic_links_user_id_foreign")
 
-  @@map("magic_links")
   @@index([userId], map: "magic_links_user_id_foreign")
+  @@map("magic_links")
 }
 
 model PasswordRecovery {
-  id         String    @db.VarChar(36) @id @default(uuid())
-  userId    String     @db.VarChar(36)
-  code       String    @db.VarChar(64)
-  expiresAt DateTime   @db.Timestamp(0) @map("expires_at")
-  createdAt DateTime   @default(now()) @db.Timestamp(0) @map("created_at")
-  updatedAt DateTime   @default(now()) @db.Timestamp(0) @map("updated_at")
-  deletedAt DateTime?  @db.Timestamp(0) @map("deleted_at")
-  users      User      @relation(fields: [userId], references: [id], onUpdate: Restrict, map: "password_recoveries_user_id_foreign")
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  userId    String    @db.VarChar(36)
+  code      String    @db.VarChar(64)
+  expiresAt DateTime  @map("expires_at") @db.Timestamp(0)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(0)
+  user      User      @relation(fields: [userId], references: [id], onUpdate: Restrict, map: "password_recoveries_user_id_foreign")
 
-  @@map("password_recoveries")
   @@index([userId], map: "password_recoveries_user_id_foreign")
+  @@map("password_recoveries")
 }
 
-
 model Document {
-  id             String    @db.VarChar(36) @id @default(uuid())
-  title          String    @db.VarChar(255)
-  content        String?   @db.LongText
-  binaryContent  Bytes?    @db.Blob @map("binary_content")
-  createdAt      DateTime  @default(now()) @db.Timestamp(0) @map("created_at")
-  updatedAt      DateTime  @default(now()) @db.Timestamp(0) @map("updated_at")
-  deletedAt      DateTime? @db.Timestamp(0) @map("deleted_at")
+  id                String      @id @default(uuid()) @db.VarChar(36)
+  title             String      @db.VarChar(255)
+  content           String?     @db.LongText
+  searchableContent String?     @db.LongText
+  binaryContent     Bytes?      @map("binary_content") @db.Blob
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime    @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt         DateTime?   @map("deleted_at") @db.Timestamp(0)
+  ownerships        Ownership[] @relation("DocumentOwnership")
+
+  @@fulltext([searchableContent])
   @@map("documents")
+}
+
+model Project {
+  id          String      @id @default(uuid()) @db.VarChar(36)
+  title       String      @db.VarChar(255)
+  description String?     @db.Text
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime    @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt   DateTime?   @map("deleted_at") @db.Timestamp(0)
+  ownerships  Ownership[] @relation("ProjectOwnership")
+
+  @@fulltext([title, description])
+  @@map("projects")
+}
+
+model Team {
+  id         String      @id @default(uuid()) @db.VarChar(36)
+  name       String      @db.VarChar(255)
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime    @default(now()) @map("updated_at") @db.Timestamp(0)
+  deletedAt  DateTime?   @map("deleted_at") @db.Timestamp(0)
+  ownerships Ownership[]
+
+  @@map("teams")
+}
+
+enum EntityType {
+  project
+  document
+}
+
+model Ownership {
+  id       String         @id @default(uuid()) @db.VarChar(36)
+  entity   EntityType
+  entityId String         @map("entity_id") @db.VarChar(36)
+  level    OwnershipLevel
+  userId   String?        @db.VarChar(36)
+  user     User?          @relation(fields: [userId], references: [id])
+  teamId   String?        @db.VarChar(36)
+  team     Team?          @relation(fields: [teamId], references: [id])
+
+  project  Project?  @relation("ProjectOwnership", fields: [entityId], references: [id], map: "ownership_project_id_foreign")
+  document Document? @relation("DocumentOwnership", fields: [entityId], references: [id], map: "ownership_document_id_foreign")
+
+  @@index([entity, entityId])
+  @@index([entityId])
+  @@index([userId])
+  @@index([teamId])
+  @@index([entity, entityId, userId])
+  @@index([entity, entityId, teamId])
+  @@map("ownerships")
+}
+
+enum OwnershipLevel {
+  owner
+  viewer
+  writer
 }

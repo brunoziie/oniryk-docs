@@ -27,11 +27,15 @@ const setup = ({ app }: { app: Express }) => {
         },
 
         async store({ documentName, state }) {
+          const html = DocumentSocketService.transformToHtml(state);
+          const text = DocumentSocketService.transformToSearchableText(html);
+
           await prisma.document.update({
             where: { id: documentName },
             data: {
               binaryContent: state,
               content: DocumentSocketService.transformToHtml(state),
+              searchableContent: text,
               updatedAt: new Date(),
             },
           });
