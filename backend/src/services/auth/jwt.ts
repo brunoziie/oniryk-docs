@@ -8,14 +8,14 @@ export default class JwtService {
     });
   }
 
-  static async verify(token: string) {
+  static async verify<T>(token: string): Promise<T> {
     return new Promise((resolve, reject) => {
       jwt.verify(token, env.APP_SECRET || '', (err, decoded) => {
         if (err) {
           return reject(err);
         }
 
-        return resolve(decoded);
+        return resolve(decoded as T);
       });
     });
   }

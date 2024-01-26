@@ -1,5 +1,6 @@
 import type { Response } from 'express';
 import { snakeifyObjectKeys } from './inflection';
+import { PaginationContract } from '../contracts/pagination.contract';
 
 export function withSuccess(
   response: Response,
@@ -14,6 +15,7 @@ export function withSuccess(
 
   response.status(statusCode).json(payload);
 }
+
 
 export function withError(response: Response, error: any, statusCode: number = 500) {
   response.status(statusCode).json({
@@ -45,4 +47,19 @@ export function withValidationError(
       })),
     },
   });
+}
+
+export function withPagination(response: Response, data: PaginationContract<unknown>) {
+  const payload = snakeifyObjectKeys({
+    status: 'OK',
+    data: data.rows,
+    pagination: {
+      total: data.total,
+      page: data.page,
+      perPage: data.perPage,
+    },
+    error: null,
+  });
+
+  response.status(200).json(payload);
 }

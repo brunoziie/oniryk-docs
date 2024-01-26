@@ -1,11 +1,13 @@
 import type { Express, NextFunction, Request, Response } from 'express';
 import { AuthContract } from './auth.contract';
 import knex, { Knex } from 'knex';
+import type DefaultFilters from '@/src/schemas/filters';
 
 declare global {
   namespace Express {
     export interface Request {
       payload: unknown;
+      filters: DefaultFilters;
     }
   }
 }

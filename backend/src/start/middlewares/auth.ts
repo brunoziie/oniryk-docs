@@ -1,3 +1,4 @@
+import { AuthUser } from '@/src/contracts/auth.contract';
 import JwtService from '@/src/services/auth/jwt';
 import { MiddlewareContext } from '@app/contracts/http.contract';
 import { withError } from '@app/helpers/http';
@@ -23,7 +24,7 @@ export default async function AuthMiddleware(context: MiddlewareContext) {
   }
 
   try {
-    request.user = await JwtService.verify(token);
+    request.user = await JwtService.verify<AuthUser>(token);
     next();
   } catch (err) {
     return withError(response, new Error('Auth: Token invalid'), 401);
