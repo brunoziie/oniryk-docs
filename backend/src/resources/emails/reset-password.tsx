@@ -1,4 +1,4 @@
-import env from '@/env';
+import env from '@app:env';
 import { Link, Text } from '@react-email/components';
 import * as React from 'react';
 import BaseEmail, { link, text } from './base';

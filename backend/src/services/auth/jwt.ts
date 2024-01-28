@@ -1,5 +1,5 @@
+import env from '@app:env';
 import jwt from 'jsonwebtoken';
-import env from '@/env';
 
 export default class JwtService {
   static sign(payload: any, lifetime?: string) {

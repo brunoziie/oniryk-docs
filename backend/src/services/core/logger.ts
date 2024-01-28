@@ -1,5 +1,5 @@
 import { debug } from 'debug';
-import env from '@/env';
+import env from '@app:env';
 
 export class LoggerService {
   static log(tag: string, message: string) {

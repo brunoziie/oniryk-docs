@@ -7,9 +7,10 @@
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only --exit-child server.ts",
     "build": "tsc && tsc-alias",
     "start": "node --env-file=.env build/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "db:migrate": "npx zenstack generate && npx prisma migrate dev --create-only",
-    "db:deploy": "npx prisma migrate deploy"
+    "test": "cd docs && npx @usebruno/cli run --env local",
+    "db:migrate": "drizzle-kit push:mysql",
+    "db:generate": "drizzle-kit generate:mysql",
+    "db:fulltext": "ts-node ./src/database/fulltext.ts"
   },
   "prisma": {
     "seed": "ts-node-dev -r tsconfig-paths/register prisma/seed.ts"
@@ -31,18 +32,15 @@
     "@types/react": "^18.2.48",
     "@types/uuid": "^9.0.7",
     "prettier": "^3.2.2",
-    "prisma": "^5.8.1",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.8",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.3.3",
-    "zenstack": "1.7.1"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@hocuspocus/extension-database": "^2.9.0",
     "@hocuspocus/server": "^2.9.0",
     "@hocuspocus/transformer": "^2.9.0",
-    "@prisma/client": "^5.8.1",
     "@react-email/components": "^0.0.13",
     "@react-email/render": "^0.0.11",
     "@tiptap/extension-table": "^2.1.16",
@@ -51,12 +49,14 @@
     "@tiptap/extension-table-row": "^2.1.16",
     "@tiptap/html": "^2.1.16",
     "@tiptap/starter-kit": "^2.1.16",
-    "@zenstackhq/runtime": "1.7.1",
     "bcrypt": "^5.1.1",
+    "connection-string-parser": "^1.0.4",
     "debug": "^4.3.4",
     "dotenv": "^16.3.1",
     "dotenv-expand": "^10.0.0",
     "dotenv-parse-variables": "^2.0.0",
+    "drizzle-kit": "^0.20.13",
+    "drizzle-orm": "^0.29.3",
     "express": "^4.18.2",
     "express-ws": "^5.0.2",
     "html-to-text": "^9.0.5",
@@ -65,10 +65,10 @@
     "lodash": "^4.17.21",
     "maildev": "^2.1.0",
     "ms": "^2.1.3",
+    "mysql2": "^3.9.0",
     "nanoid": "^3.3.7",
     "nodemailer": "^6.9.8",
     "npm": "^10.3.0",
-    "prisma-extension-soft-delete": "^1.0.0",
     "react": "^18.2.0",
     "uniqolor": "^1.1.1",
     "zod": "^3.22.4"

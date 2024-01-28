@@ -1,8 +1,8 @@
 import { Body, Container, Head, Heading, Html, Preview } from '@react-email/components';
-import * as React from 'react';
+import React, { ReactNode } from 'react';
 
 interface BaseEmailProps {
-  children: React.ReactNode;
+  children: ReactNode;
   title?: string;
   preview?: string;
 }

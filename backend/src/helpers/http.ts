@@ -1,10 +1,11 @@
 import type { Response } from 'express';
 import { snakeifyObjectKeys } from './inflection';
 import { PaginationContract } from '../contracts/pagination.contract';
+import { ZodError } from 'zod';
 
 export function withSuccess(
   response: Response,
-  data: any = null,
+  data: unknown = null,
   statusCode: number = 200
 ) {
   const payload = snakeifyObjectKeys({
@@ -16,15 +17,14 @@ export function withSuccess(
   response.status(statusCode).json(payload);
 }
 
-
-export function withError(response: Response, error: any, statusCode: number = 500) {
+export function withError(response: Response, error: Error, statusCode: number = 500) {
   response.status(statusCode).json({
     status: 'ERROR',
     data: null,
     error: {
       message: error.message,
       ...(process.env.NODE_ENV === 'development'
-        ? { stack: error.stack.split(/\n/) }
+        ? { stack: error.stack?.split(/\n/) }
         : {}),
     },
   });
@@ -32,7 +32,7 @@ export function withError(response: Response, error: any, statusCode: number = 5
 
 export function withValidationError(
   response: Response,
-  error: any,
+  error: ZodError,
   statusCode: number = 400
 ) {
   response.status(statusCode).json({

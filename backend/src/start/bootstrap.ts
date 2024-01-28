@@ -1,16 +1,17 @@
 import express, { Request, Response } from 'express';
-import { HttpServerInitializer } from '@app/contracts/http.contract';
-import { withError } from '@app/helpers/http';
-import routes from '@app/start/routes';
-import env from '@/env';
-import hocuspocus from '@app/start/hocuspocus';
-import PayloadMiddleware from '@app/start/middlewares/payload';
-import prisma from './database';
+import { HttpServerInitializer } from '@app:contracts/http.contract';
+import { withError } from '@app:helpers/http';
+import routes from '@app:start/routes';
+import env from '@app:env';
+import hocuspocus from '@app:start/hocuspocus';
+import PayloadMiddleware from '@app:start/middlewares/payload';
 import mailer from './mailer';
+import { connection } from '@db:client';
 
 const http: HttpServerInitializer = ({ setup }) => {
   const app = express();
 
+  app.disable('x-powered-by');
   app.use(express.json());
 
   setup && setup(app);
@@ -52,7 +53,7 @@ export default async function start() {
 const maildev = mailer();
 
 process.on('uncaughtException', (err) => {
-  prisma.$disconnect();
+  connection.destroy();
   maildev?.close();
 
   console.error(

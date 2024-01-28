@@ -1,7 +1,7 @@
-import { AuthUser } from '@/src/contracts/auth.contract';
-import JwtService from '@/src/services/auth/jwt';
-import { MiddlewareContext } from '@app/contracts/http.contract';
-import { withError } from '@app/helpers/http';
+import { AuthUser } from '@app:contracts/auth.contract';
+import JwtService from '@app:services/auth/jwt';
+import { MiddlewareContext } from '@app:contracts/http.contract';
+import { withError } from '@app:helpers/http';
 
 export default async function AuthMiddleware(context: MiddlewareContext) {
   const { request, response, next } = context;

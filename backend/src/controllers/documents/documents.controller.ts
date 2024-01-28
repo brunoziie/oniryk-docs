@@ -1,4 +1,4 @@
-import { HttpContextContract } from '@app/contracts/http.contract';
+import { HttpContextContract } from '@app:contracts/http.contract';
 import { withSuccess } from '../../helpers/http';
 
 export default class DocumentsController {

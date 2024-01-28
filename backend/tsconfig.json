@@ -5,8 +5,8 @@
     "module": "commonjs",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["*"],
-      "@app/*": ["src/*"]
+      "@db:*": ["src/database/*"],
+      "@app:*": ["src/*"]
     },
     "outDir": "./build",
     "esModuleInterop": true,

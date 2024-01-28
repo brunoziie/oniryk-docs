@@ -1,6 +1,6 @@
 import MailDev from 'maildev';
 import { convert } from 'html-to-text';
-import env from '@/env';
+import env from '@app:env';
 
 const LINE_SIZE = process.stdout.columns - 4 || 80;
 

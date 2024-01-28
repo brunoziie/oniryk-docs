@@ -1,8 +1,0 @@
-###
-# @description: Generate Google OAuth URL
-GET {{BASE_URL}}/auth/oauth/google/authorize
-
-###
-# @description: Get Google OAuth token using code
-@code = {{$input Google OAuth code}}
-GET {{BASE_URL}}/auth/oauth/google/callback?code={{code}}

@@ -5,9 +5,9 @@ import {
   RouteMethod,
   RouteMiddleware,
   RouteMiddlewareContract,
-} from '@app/contracts/http.contract';
-import { withError } from '../helpers/http';
+} from '@app:contracts/http.contract';
 import path from 'path';
+import { withError } from '../helpers/http';
 
 export function route(
   method: RouteMethod,
@@ -19,7 +19,7 @@ export function route(
     const handler: RouteAction = async (request, response) => {
       try {
         return await action({ request, response });
-      } catch (error) {
+      } catch (error: any) {
         withError(response, error);
       }
     };

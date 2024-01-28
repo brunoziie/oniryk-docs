@@ -1,76 +1,22 @@
-import { PrismaClient } from '@prisma/client';
-import { encrypt } from '@app/helpers/bcrypt';
-
-const prisma = new PrismaClient();
-
-export type UpdatebleUserFields = {
-  displayName: string;
-  email: string;
-  password: string;
-  username: string;
-  favoriteColor: string;
-  avatar: string;
-};
+import { AppError, BAD_REQUEST } from '@app:helpers/error';
+import { UserRepository } from '@db:repositories/user';
+import { User } from '@db:schemas';
+import { Updatable } from '@db:utils';
 
 export default class AccountService {
   static async getUserAccount(userId: string) {
-    return prisma.user.findUnique({
-      where: {
-        id: userId,
-        deletedAt: null,
-      },
-    });
+    return await UserRepository.find(userId);
   }
 
-  static async updateUserAccount(userId: string, data: Partial<UpdatebleUserFields>) {
-    const toUpdate = {} as Partial<UpdatebleUserFields>;
-
-    if (data.displayName) {
-      toUpdate.displayName = data.displayName;
-    }
-
+  static async updateUserAccount(userId: string, data: Updatable<User>) {
     if (data.email) {
-      if (!(await this.canChangeEmail(userId, data.email))) {
-        toUpdate.email = data.email;
-      } else {
-        throw new Error('Email already in use');
+      const inUse = await UserRepository.emailExists(data.email, userId);
+
+      if (inUse) {
+        throw AppError('account', 'email already in use', BAD_REQUEST);
       }
     }
 
-    if (data.password) {
-      toUpdate.password = await encrypt(data.password);
-    }
-
-    if (data.username) {
-      toUpdate.username = data.username;
-    }
-
-    if (data.favoriteColor) {
-      toUpdate.favoriteColor = data.favoriteColor;
-    }
-
-    if (data.avatar) {
-      toUpdate.avatar = data.avatar;
-    }
-
-    return prisma.user.update({
-      where: {
-        id: userId,
-        deletedAt: null,
-      },
-      data: toUpdate,
-    });
-  }
-
-  static async canChangeEmail(userId: string, email: string) {
-    return !!(await prisma.user.findFirst({
-      where: {
-        email: email,
-        deletedAt: null,
-        NOT: {
-          id: userId,
-        },
-      },
-    }));
+    return await UserRepository.update(userId, data);
   }
 }

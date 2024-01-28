@@ -1,7 +1,9 @@
-import { HttpContextContract } from '@app/contracts/http.contract';
+import { HttpContextContract } from '@app:contracts/http.contract';
+import { Project } from '@db:schemas';
+import { Updatable } from '@db:utils';
 import { withPagination, withSuccess } from '../helpers/http';
-import { CreateProjectPayload, UpdateProjectPayload } from '../schemas/project.schema';
 import ProjectCrudService from '../services/projects/project';
+import { CreateProjectPayload } from '../validators/project.schema';
 
 export default class ProjectsController {
   static async index({ response, request }: HttpContextContract) {
@@ -34,8 +36,7 @@ export default class ProjectsController {
 
   static async update({ request, response }: HttpContextContract) {
     const { id } = request.params;
-    const data = request.payload as UpdateProjectPayload;
-
+    const data = request.payload as Updatable<Project>;
     await ProjectCrudService.updateProject(id, data);
 
     response.redirect(`/projects/${request.params.id}`);
@@ -43,6 +44,7 @@ export default class ProjectsController {
 
   static async destroy({ request, response }: HttpContextContract) {
     await ProjectCrudService.deleteProject(request.params.id);
+
     withSuccess(response);
   }
 }

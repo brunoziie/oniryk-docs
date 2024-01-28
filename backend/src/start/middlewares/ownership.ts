@@ -1,8 +1,7 @@
-import OwnershipRepository from '@/src/repositories/ownership';
-import TeamRepository from '@/src/repositories/teams';
-import { MiddlewareContext } from '@app/contracts/http.contract';
-import { withError } from '@app/helpers/http';
-import { OwnershipLevel, EntityType } from '@prisma/client';
+import { MiddlewareContext } from '@app:contracts/http.contract';
+import { withError } from '@app:helpers/http';
+import OwnershipRepository from '@db:repositories/ownership';
+import { EntityType, OwnershipLevel } from '@db:schemas';
 
 export type OwnershipMiddlewareContext = MiddlewareContext & {
   entity: EntityType;
@@ -15,13 +14,10 @@ export default async function OwnershipMiddleware(context: OwnershipMiddlewareCo
   const { entity, entityKey, level } = context;
   const { user, params } = request;
 
-  const teams = await TeamRepository.getUserTeams(user!.id);
-
   const ownership = await OwnershipRepository.getEntityOwnership(
     entity,
     params[entityKey || 'id'],
     user!.id,
-    teams.map((team) => team.id),
     level
   );
 

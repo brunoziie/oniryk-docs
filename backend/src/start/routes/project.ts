@@ -1,8 +1,8 @@
-import { group } from '@app/start/router';
-import { createProject } from '@/src/schemas/project.schema';
-import ProjectsController from '@app/controllers/projects.controller';
-import AuthMiddleware from '@app/start/middlewares/auth';
-import { validate } from '@app/start/middlewares/validator';
+import { group } from '@app:start/router';
+import { createProject } from '@app:validators/project.schema';
+import ProjectsController from '@app:controllers/projects.controller';
+import AuthMiddleware from '@app:start/middlewares/auth';
+import { validate } from '@app:start/middlewares/validator';
 import { ownership } from '../middlewares/ownership';
 
 export default [

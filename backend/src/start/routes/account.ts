@@ -1,8 +1,8 @@
-import { group } from '@app/start/router';
-import AccountController from '@app/controllers/account.controller';
-import { validate } from '@app/start/middlewares/validator';
-import { updateAccount } from '@/src/schemas/auth/account.schema';
-import AuthMiddleware from '@app/start/middlewares/auth';
+import { group } from '@app:start/router';
+import AccountController from '@app:controllers/account.controller';
+import { validate } from '@app:start/middlewares/validator';
+import { updateAccount } from '@app:validators/auth/account.schema';
+import AuthMiddleware from '@app:start/middlewares/auth';
 
 export default [
   group(

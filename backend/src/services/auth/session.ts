@@ -1,16 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { AppError } from '@app:helpers/error';
 import JwtService from './jwt';
-
-const prisma = new PrismaClient();
+import { UserRepository } from '@db:repositories/user';
 
 export class SessionService {
   static async createSession(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId, deletedAt: null },
-    });
+    const user = await UserRepository.find(userId);
 
     if (!user) {
-      throw new Error('User not found');
+      throw AppError('session', 'user not found', 400);
     }
 
     const payload = {

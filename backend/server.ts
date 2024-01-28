@@ -1,3 +1,3 @@
-import start from '@app/start/bootstrap';
+import start from '@app:start/bootstrap';
 
 start();

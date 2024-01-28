@@ -1,0 +1,23 @@
+meta {
+  name: reset
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{HOST}}/auth/password/reset
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "code": "{{PASS_RESET_CODE}}",
+    "password": "{{USER_PASSWORD}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+

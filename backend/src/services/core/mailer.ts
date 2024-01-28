@@ -1,6 +1,6 @@
 import { createTransport } from 'nodemailer';
 import { render } from '@react-email/render';
-import env from '@/env';
+import env from '@app:env';
 import { LoggerService } from './logger';
 
 export type MailerData = Record<string, any>;

@@ -1,20 +1,20 @@
-import { group } from '@app/start/router';
+import { group } from '@app:start/router';
 
 // Controllers
-import MagicLinkController from '@app/controllers/auth/magic-link.controller';
-import GoogleOAuthController from '@app/controllers/auth/oauth/google.controller';
-import GithubOAuthController from '@app/controllers/auth/oauth/github.controller';
-import PasswordController from '@/src/controllers/auth/password.controller';
-import { validate } from '@app/start/middlewares/validator';
+import MagicLinkController from '@app:controllers/auth/magic-link.controller';
+import GoogleOAuthController from '@app:controllers/auth/oauth/google.controller';
+import GithubOAuthController from '@app:controllers/auth/oauth/github.controller';
+import PasswordController from '@app:controllers/auth/password.controller';
+import { validate } from '@app:start/middlewares/validator';
 
 // Validation schemas
-import { login, store } from '@/src/schemas/auth/magic-link.schema';
-import { callback } from '@/src/schemas/auth/oauth.schema';
+import { login, store } from '@app:validators/auth/magic-link.schema';
+import { callback } from '@app:validators/auth/oauth.schema';
 import {
   login as loginPassword,
   forgotPassword,
   resetPassword,
-} from '@/src/schemas/auth/password.schema';
+} from '@app:validators/auth/password.schema';
 
 export default [
   group(

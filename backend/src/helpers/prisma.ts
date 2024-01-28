@@ -12,7 +12,7 @@ export function $or(...conditions: any[]) {
   };
 }
 
-export function $int(value: BigInt) {
+export function $int(value: bigint) {
   const str = value.toString();
   return parseInt(str);
 }

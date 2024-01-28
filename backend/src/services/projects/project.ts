@@ -1,9 +1,7 @@
-import { AuthUser } from '@app/contracts/auth.contract';
-import { CreateProjectPayload, UpdateProjectPayload } from '@app/schemas/project.schema';
-import { randomUUID } from 'node:crypto';
-import prisma from '@app/start/database';
-import ProjectRepository from '@/src/repositories/project';
-import OwnershipRepository from '@/src/repositories/ownership';
+import { AuthUser } from '@app:contracts/auth.contract';
+import ProjectRepository from '@db:repositories/project';
+import { Project, ProjectInsert } from '@db:schemas';
+import { Updatable } from '@db:utils';
 
 export default class ProjectCrudService {
   static async allProjects(user: AuthUser, page = 1, perPage = 50) {
@@ -11,11 +9,7 @@ export default class ProjectCrudService {
   }
 
   static async getProject(user: AuthUser, id: string, withMembers = false) {
-    const project = await prisma.project.findFirst({
-      where: {
-        id,
-      },
-    });
+    const project = await ProjectRepository.findForUser(user, id);
 
     if (!project) {
       return null;
@@ -23,37 +17,21 @@ export default class ProjectCrudService {
 
     if (withMembers) {
       const members = await ProjectRepository.getProjectMembers(id);
-      return {
-        ...project,
-        members: members.map((member) => ({
-          type: member.user ? 'user' : 'team',
-          id: member.user ? member.user.id : member.team?.id,
-          name: member.user ? member.user.username : member.team?.name,
-          level: member.level,
-        })),
-      };
+      return { ...project, members };
     }
 
     return project;
   }
 
-  static async create(user: AuthUser, data: CreateProjectPayload) {
+  static async create(user: AuthUser, data: ProjectInsert) {
     return ProjectRepository.createProject(user, data);
   }
 
-  static async updateProject(id: string, data: UpdateProjectPayload) {
-    return await prisma.project.update({
-      where: { id, deletedAt: null },
-      data: {
-        title: data.title,
-        description: data.description,
-      },
-    });
+  static async updateProject(id: string, data: Updatable<Project>) {
+    return await ProjectRepository.updateProject(id, data);
   }
 
   static async deleteProject(id: string) {
-    return await prisma.project.delete({
-      where: { id },
-    });
+    return await ProjectRepository.delete(id);
   }
 }

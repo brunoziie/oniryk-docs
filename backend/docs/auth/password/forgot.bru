@@ -1,0 +1,21 @@
+meta {
+  name: forgot
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{HOST}}/auth/password/forgot
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{USER_EMAIL}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

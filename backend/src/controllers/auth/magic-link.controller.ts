@@ -1,8 +1,8 @@
-import { SessionService } from '@app/services/auth/session';
-import { HttpContextContract } from '@app/contracts/http.contract';
-import { withSuccess } from '@app/helpers/http';
-import MagicLinkService from '@app/services/auth/magic-link';
-import { LoginPayload, StorePayload } from '../../schemas/auth/magic-link.schema';
+import { SessionService } from '@app:services/auth/session';
+import { HttpContextContract } from '@app:contracts/http.contract';
+import { withSuccess } from '@app:helpers/http';
+import MagicLinkService from '@app:services/auth/magic-link';
+import { LoginPayload, StorePayload } from '../../validators/auth/magic-link.schema';
 
 export default class MagicLinkController {
   static async store({ request, response }: HttpContextContract) {

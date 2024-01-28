@@ -1,7 +1,5 @@
 import type { Express, NextFunction, Request, Response } from 'express';
-import { AuthContract } from './auth.contract';
-import knex, { Knex } from 'knex';
-import type DefaultFilters from '@/src/schemas/filters';
+import type DefaultFilters from '@app:validators/filters';
 
 declare global {
   namespace Express {
@@ -28,7 +26,7 @@ export type RouteHandler = (params: HttpContextContract) => void | Promise<void>
 export type RouteAction = (
   req: Request,
   res: Response,
-  next: Function
+  next: NextFunction
 ) => void | Promise<void>;
 
 export type RouteMiddleware = (

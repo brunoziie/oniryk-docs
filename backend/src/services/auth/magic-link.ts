@@ -1,30 +1,23 @@
-import prisma from '@app/start/database';
-import { nanoid } from 'nanoid';
-import ms from 'ms';
+import { AppError } from '@app:helpers/error';
+import { LongId } from '@app:helpers/id';
+import MagicLinkMail, { MagicLinkEmailProps } from '@app:resources/emails/magic-link';
+import { MagicLinkRepository } from '@db:repositories/magic-link';
+import { UserRepository } from '@db:repositories/user';
 import { MailerService } from '../core/mailer';
-import MagicLinkMail, { MagicLinkEmailProps } from '@app/resources/emails/magic-link';
 
 export type UserId = string;
 
-const CODE_LENGTH = 32;
-
 export default class MagicLinkService {
   static async sendMagicLink(email: string) {
-    const user = await prisma.user.findFirst({ where: { email, deletedAt: null } });
+    const user = await UserRepository.findByEmail(email);
 
     if (!user) {
-      throw new Error('Auth: User not found');
+      throw AppError('auth', 'invalid email', 400);
     }
 
-    const magicLink = {
-      userId: user.id,
-      code: nanoid(CODE_LENGTH),
-      expiresAt: new Date(Date.now() + ms('10 minutes')),
-    };
+    const code = await MagicLinkRepository.create(user);
 
-    await prisma.magicLink.create({ data: magicLink });
-
-    await MailerService.send<typeof MagicLinkMail, MagicLinkEmailProps>(
+    await MailerService.sendLater<typeof MagicLinkMail, MagicLinkEmailProps>(
       {
         to: user.email,
         subject: 'Magic Link',
@@ -32,38 +25,22 @@ export default class MagicLinkService {
       MagicLinkMail,
       {
         name: user.displayName.split(' ')[0],
-        code: magicLink.code,
+        code: code,
       }
     );
 
-    return magicLink;
-  }
-
-  static async findMagicLink(code: string) {
-    const link = await prisma.magicLink.findFirst({
-      where: {
-        code,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-    });
-
-    if (!link) {
-      throw new Error('Auth: Invalid and/or expired magic link');
-    }
-
-    return link;
+    return code;
   }
 
   static async validateMagicLink(code: string) {
-    const { id, userId } = await this.findMagicLink(code);
+    const { id, userId } = await MagicLinkRepository.findByCode(code);
 
-    await prisma.magicLink.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    if (!id) {
+      throw AppError('auth', 'invalid magic link', 400);
+    }
 
-    return userId as UserId;
+    await MagicLinkRepository.delete(id);
+
+    return userId as LongId;
   }
 }
