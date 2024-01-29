@@ -1,0 +1,31 @@
+meta {
+  name: 3_update
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{HOST}}/projects/{{PROJECT_ID}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ACCESS_TOKEN}}
+}
+
+script:pre-request {
+  const {faker} = require('@faker-js/faker');
+  const title = faker.commerce.productName();
+  const description = faker.commerce.productDescription();
+  
+  req.setBody(JSON.stringify({
+    title,
+    description
+  }));
+}
+
+
+assert {
+  res.status: eq 200
+}

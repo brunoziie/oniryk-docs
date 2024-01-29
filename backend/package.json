@@ -41,6 +41,7 @@
     "@hocuspocus/extension-database": "^2.9.0",
     "@hocuspocus/server": "^2.9.0",
     "@hocuspocus/transformer": "^2.9.0",
+    "@hono/node-server": "^1.5.0",
     "@react-email/components": "^0.0.13",
     "@react-email/render": "^0.0.11",
     "@tiptap/extension-table": "^2.1.16",
@@ -59,6 +60,7 @@
     "drizzle-orm": "^0.29.3",
     "express": "^4.18.2",
     "express-ws": "^5.0.2",
+    "hono": "^3.12.8",
     "html-to-text": "^9.0.5",
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
@@ -71,6 +73,8 @@
     "npm": "^10.3.0",
     "react": "^18.2.0",
     "uniqolor": "^1.1.1",
-    "zod": "^3.22.4"
+    "ws": "^8.16.0",
+    "zod": "^3.22.4",
+    "zod-validation-error": "^3.0.0"
   }
 }

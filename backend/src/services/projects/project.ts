@@ -4,8 +4,8 @@ import { Project, ProjectInsert } from '@db:schemas';
 import { Updatable } from '@db:utils';
 
 export default class ProjectCrudService {
-  static async allProjects(user: AuthUser, page = 1, perPage = 50) {
-    return await ProjectRepository.allProjects(user, page, perPage);
+  static async all(user: AuthUser, page = 1, perPage = 50, query?: string) {
+    return await ProjectRepository.all(user, page, perPage, query);
   }
 
   static async getProject(user: AuthUser, id: string, withMembers = false) {
@@ -16,7 +16,7 @@ export default class ProjectCrudService {
     }
 
     if (withMembers) {
-      const members = await ProjectRepository.getProjectMembers(id);
+      const members = await ProjectRepository.getMembers(id);
       return { ...project, members };
     }
 
@@ -24,11 +24,11 @@ export default class ProjectCrudService {
   }
 
   static async create(user: AuthUser, data: ProjectInsert) {
-    return ProjectRepository.createProject(user, data);
+    return ProjectRepository.create(user, data);
   }
 
   static async updateProject(id: string, data: Updatable<Project>) {
-    return await ProjectRepository.updateProject(id, data);
+    return await ProjectRepository.update(id, data);
   }
 
   static async deleteProject(id: string) {

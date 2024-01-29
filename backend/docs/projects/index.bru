@@ -1,17 +1,29 @@
 meta {
-  name: index
+  name: 1_index
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
   url: {{HOST}}/projects
   body: none
-  auth: bearer
+  auth: none
 }
 
-auth:bearer {
-  token: {{ACCESS_TOKEN}}
+query {
+  ~page: 1
+  ~q: diga
+  ~limit: 1
+}
+
+headers {
+  Authorization: Bearer {{ACCESS_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.pagination: isDefined
 }
 
 script:post-response {

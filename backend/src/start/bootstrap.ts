@@ -1,67 +1,23 @@
-import express, { Request, Response } from 'express';
-import { HttpServerInitializer } from '@app:contracts/http.contract';
-import { withError } from '@app:helpers/http';
-import routes from '@app:start/routes';
-import env from '@app:env';
 import hocuspocus from '@app:start/hocuspocus';
-import PayloadMiddleware from '@app:start/middlewares/payload';
-import mailer from './mailer';
 import { connection } from '@db:client';
-
-const http: HttpServerInitializer = ({ setup }) => {
-  const app = express();
-
-  app.disable('x-powered-by');
-  app.use(express.json());
-
-  setup && setup(app);
-
-  app.get('*', (req: Request, res: Response) => {
-    withError(res, new Error(`Route ${req.originalUrl} not found`), 404);
-  });
-
-  app.use((err: Error, req: Request, res: Response) => {
-    withError(res, err);
-  });
-
-  app.listen(env.PORT, () => {
-    console.log(`🤖 running @ 0.0.0.0:${env.PORT}`);
-  });
-
-  return app;
-};
+import hono from './hono';
+import mailer from './mailer';
 
 export default async function start() {
-  const app = http({
-    setup: (app) => {
-      app.use((request, response, next) => {
-        return PayloadMiddleware({ request, response, next });
-      });
+  // HTTP Router
+  const { app, server } = hono();
 
-      // Setup routes
-      routes.forEach((route) => route({ app }));
+  // Collaborative editing server
+  hocuspocus(server);
 
-      // Setup Hocuspocus server
-      hocuspocus({ app });
-    },
+  // Local mail server
+  mailer();
+
+  // Graceful shutdown
+  process.on('uncaughtException', (err) => {
+    connection?.destroy();
+    process.exit(1);
   });
 
   return app;
 }
-
-// Setup mailer
-const maildev = mailer();
-
-process.on('uncaughtException', (err) => {
-  connection.destroy();
-  maildev?.close();
-
-  console.error(
-    `[UncaughtException :: Shutting down server] -> {\n\n${err.stack
-      ?.split('\n')
-      .map((line) => `   ${line.replace(/^\s+/, '  ')}`)
-      .join('\n')}\n\n}`
-  );
-
-  process.exit(1);
-});

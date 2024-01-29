@@ -1,63 +1,48 @@
-import {
-  RouteAction,
-  RouteHandler,
-  RouteInjector,
-  RouteMethod,
-  RouteMiddleware,
-  RouteMiddlewareContract,
-} from '@app:contracts/http.contract';
-import path from 'path';
-import { withError } from '../helpers/http';
+import { HttpContextContract, MiddlewareFn } from '@app:contracts/http.contract';
+import { Hono, TypedResponse } from 'hono';
 
-export function route(
+export type RouteMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
+export type RouteHandler = (
+  ctx: HttpContextContract
+) => Promise<Response | TypedResponse>;
+
+export type Route = (
   method: RouteMethod,
   path: string,
-  action: RouteHandler,
-  middlewares?: RouteMiddlewareContract[]
-) {
-  return ({ app }: RouteInjector) => {
-    const handler: RouteAction = async (request, response) => {
-      try {
-        return await action({ request, response });
-      } catch (error: any) {
-        withError(response, error);
-      }
-    };
+  handler: RouteHandler,
+  middlewares?: MiddlewareFn[]
+) => (hono: Hono) => void;
 
-    const middlewareChain = (middlewares || []).map((cur) => {
-      const middleware: RouteMiddleware = (request, response, next) => {
-        return cur({ response, request, next });
-      };
+export type Group = (
+  prefix: string,
+  def: (attrs: { route: Route; group: Group }) => void
+) => (hono: Hono) => void;
 
-      return middleware;
-    });
-
-    app[method](path, ...middlewareChain, handler);
+export const route: Route = (method, path, handler, middlewares = []) => {
+  return (hono: Hono) => {
+    hono[method](path, ...middlewares, handler);
   };
-}
-
-export type GroupContructorFn = (
-  method: RouteMethod,
-  path: string,
-  action: RouteHandler,
-  middlewares?: RouteMiddlewareContract[]
-) => void;
-
-export type GroupOptions = {
-  prefix?: string;
-  middlewares?: RouteMiddlewareContract[];
 };
 
-export function group(fn: (route: GroupContructorFn) => void, options: GroupOptions) {
-  return (injections: RouteInjector) => {
-    fn((method, routePath, action, middlewares) => {
-      const prefix = options.prefix || '';
-      const prefixMiddlewares = options.middlewares || [];
-      const routeMiddlewares = prefixMiddlewares.length
-        ? prefixMiddlewares.concat(middlewares || [])
-        : middlewares;
+export const group: Group = (prefix, def) => {
+  return (hono: Hono) => {
+    const app = new Hono();
 
-      route(method, path.join(prefix, routePath), action, routeMiddlewares)(injections);
+    const routeFn: Route = (method, path, handler, middlewares = []) => {
+      route(method, path, handler, middlewares)(app);
+      return () => {};
+    };
+
+    const groupFn: Group = (prefix, def) => {
+      group(prefix, def)(app);
+      return () => {};
+    };
+
+    def({
+      route: routeFn,
+      group: groupFn,
     });
+
+    hono.route(prefix, app);
   };
-}
+};

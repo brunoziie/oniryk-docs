@@ -1,39 +1,45 @@
-import { MiddlewareContext } from '@app:contracts/http.contract';
-import { withError } from '@app:helpers/http';
+import { MiddlewareFn } from '@app:contracts/http.contract';
+import { AppError, FORBIDDEN, UNAUTHORIZED } from '@app:helpers/error';
 import OwnershipRepository from '@db:repositories/ownership';
 import { EntityType, OwnershipLevel } from '@db:schemas';
 
-export type OwnershipMiddlewareContext = MiddlewareContext & {
-  entity: EntityType;
-  entityKey?: string;
-  level: OwnershipLevel[];
+export type OwnershipMiddleware = (
+  entity: EntityType,
+  levels?: OwnershipLevel[],
+  idParam?: string
+) => MiddlewareFn;
+
+const ownership: OwnershipMiddleware = (entity, levels = [], idParam = 'id') => {
+  return async (ctx, next) => {
+    const user = ctx.get('user');
+
+    if (!user) {
+      throw AppError(
+        'auth',
+        'you must be authenticated to access this resource',
+        UNAUTHORIZED
+      );
+    }
+
+    const { id: userId } = user;
+    const params = ctx.req.param() as Record<string, string>;
+    const entityId = params[idParam];
+
+    const ownership = await OwnershipRepository.getEntityOwnership(
+      entity,
+      entityId,
+      userId,
+      levels
+    );
+
+    if (!ownership) {
+      throw AppError('auth', 'you are not allowed to access this resource', FORBIDDEN);
+    }
+
+    ctx.set('ownership', [ownership.entity, ownership.level]);
+
+    return next();
+  };
 };
 
-export default async function OwnershipMiddleware(context: OwnershipMiddlewareContext) {
-  const { request, response, next } = context;
-  const { entity, entityKey, level } = context;
-  const { user, params } = request;
-
-  const ownership = await OwnershipRepository.getEntityOwnership(
-    entity,
-    params[entityKey || 'id'],
-    user!.id,
-    level
-  );
-
-  if (!ownership) {
-    return withError(response, new Error('Ownership: Not found'), 404);
-  }
-
-  next();
-}
-
-export function ownership(
-  entity: EntityType,
-  level: OwnershipLevel[] = ['owner'],
-  entityKey?: string
-) {
-  return async (context: MiddlewareContext) => {
-    await OwnershipMiddleware({ ...context, entity, entityKey, level });
-  };
-}
+export default ownership;

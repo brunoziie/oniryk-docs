@@ -1,23 +1,23 @@
-import { SessionService } from '@app:services/auth/session';
 import { HttpContextContract } from '@app:contracts/http.contract';
 import { withSuccess } from '@app:helpers/http';
 import MagicLinkService from '@app:services/auth/magic-link';
+import { SessionService } from '@app:services/auth/session';
 import { LoginPayload, StorePayload } from '../../validators/auth/magic-link.schema';
 
 export default class MagicLinkController {
-  static async store({ request, response }: HttpContextContract) {
-    const { email } = request.payload as StorePayload;
+  static async store(ctx: HttpContextContract) {
+    const { email } = ctx.get('payload') as StorePayload;
     await MagicLinkService.sendMagicLink(email);
 
-    withSuccess(response, {});
+    return withSuccess(ctx, {});
   }
 
-  static async login({ request, response }: HttpContextContract) {
-    const { code } = request.payload as LoginPayload;
+  static async login(ctx: HttpContextContract) {
+    const { code } = ctx.get('payload') as LoginPayload;
 
     const userId = await MagicLinkService.validateMagicLink(code);
     const session = await SessionService.createSession(userId);
 
-    withSuccess(response, { user: session.payload, token: session.token });
+    return withSuccess(ctx, { user: session.payload, token: session.token });
   }
 }

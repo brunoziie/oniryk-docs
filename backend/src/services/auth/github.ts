@@ -1,6 +1,6 @@
 import env from '@app:env';
 import { encrypt } from '@app:helpers/bcrypt';
-import { AppError, BAD_REQUEST } from '@app:helpers/error';
+import { AppError, BAD_REQUEST, INTERNAL_SERVER_ERROR } from '@app:helpers/error';
 import { fetchJSON } from '@app:helpers/fetch';
 import { shortId } from '@app:helpers/id';
 import { UserRepository } from '@db:repositories/user';
@@ -40,41 +40,35 @@ export default class GithubService {
   }
 
   static async getAccessToken(code: string) {
-    try {
-      const req = await fetch(`${GH_BASE}/access_token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          client_id: env.GITHUB_CLIENT_ID,
-          client_secret: env.GITHUB_CLIENT_SECRET,
-          code,
-        }),
-      });
+    const req = await fetch(`${GH_BASE}/access_token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: env.GITHUB_CLIENT_ID,
+        client_secret: env.GITHUB_CLIENT_SECRET,
+        code,
+      }),
+    });
 
-      if (req.status !== 200) {
-        throw new Error('GitHub: Failed to fetch access token');
-      }
-
-      const res = await req.json();
-      const token = res.access_token;
-
-      if (!token) {
-        throw new Error(
-          `GitHub: ${res.error_description || 'Failed to fetch access token'}`
-        );
-      }
-
-      return res.access_token;
-    } catch (error: any) {
-      if (error.message && error.message.startsWith('GitHub:')) {
-        throw error;
-      }
-
-      throw new Error('GitHub: Failed to fetch access token');
+    if (req.status !== 200) {
+      throw AppError('github', 'failed to fetch access token', INTERNAL_SERVER_ERROR);
     }
+
+    const res = await req.json();
+    const token = res.access_token;
+
+    if (!token) {
+      throw AppError(
+        'github',
+        (res.error_description || 'failed to fetch access token').toLowerCase(),
+        BAD_REQUEST
+      );
+    }
+
+    return token;
   }
 
   static async getProfile(accessToken: string, skipEmailVerification = false) {

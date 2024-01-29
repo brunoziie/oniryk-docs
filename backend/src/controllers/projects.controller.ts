@@ -6,45 +6,47 @@ import ProjectCrudService from '../services/projects/project';
 import { CreateProjectPayload } from '../validators/project.schema';
 
 export default class ProjectsController {
-  static async index({ response, request }: HttpContextContract) {
-    const projects = await ProjectCrudService.allProjects(
-      request.user!,
-      request.filters.page,
-      request.filters.perPage
+  static async index(ctx: HttpContextContract) {
+    const filters = ctx.get('filters');
+    const user = ctx.get('user')!;
+    const projects = await ProjectCrudService.all(
+      user,
+      filters.page,
+      filters.limit,
+      filters.q
     );
 
-    withPagination(response, projects);
+    return withPagination(ctx, projects);
   }
 
-  static async show({ request, response }: HttpContextContract) {
-    const project = await ProjectCrudService.getProject(
-      request.user!,
-      request.params.id,
-      true
-    );
+  static async show(ctx: HttpContextContract) {
+    const user = ctx.get('user')!;
+    const { id } = ctx.req.param() as Record<string, string>;
+    const project = await ProjectCrudService.getProject(user, id, true);
 
-    withSuccess(response, project);
+    return withSuccess(ctx, project);
   }
 
-  static async store({ request, response }: HttpContextContract) {
-    const { title, description } = request.payload as CreateProjectPayload;
-    const user = request.user!;
+  static async store(ctx: HttpContextContract) {
+    const { title, description } = ctx.get('payload') as CreateProjectPayload;
+    const user = ctx.get('user')!;
     const id = await ProjectCrudService.create(user, { title, description });
 
-    response.redirect(`/projects/${id}`);
+    return ctx.redirect(`/projects/${id}`);
   }
 
-  static async update({ request, response }: HttpContextContract) {
-    const { id } = request.params;
-    const data = request.payload as Updatable<Project>;
+  static async update(ctx: HttpContextContract) {
+    const { id } = ctx.req.param() as Record<string, string>;
+    const data = ctx.get('payload') as Updatable<Project>;
     await ProjectCrudService.updateProject(id, data);
 
-    response.redirect(`/projects/${request.params.id}`);
+    return withSuccess(ctx);
   }
 
-  static async destroy({ request, response }: HttpContextContract) {
-    await ProjectCrudService.deleteProject(request.params.id);
+  static async destroy(ctx: HttpContextContract) {
+    const { id } = ctx.req.param() as Record<string, string>;
+    await ProjectCrudService.deleteProject(id);
 
-    withSuccess(response);
+    return withSuccess(ctx);
   }
 }

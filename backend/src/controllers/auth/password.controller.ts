@@ -3,31 +3,31 @@ import { withSuccess } from '@app:helpers/http';
 import { PasswordService } from '@app:services/auth/password';
 import { SessionService } from '@app:services/auth/session';
 import {
-  LoginPayload,
   ForgotPasswordPayload,
+  LoginPayload,
   ResetPasswordPayload,
 } from '../../validators/auth/password.schema';
 
 export default class PasswordController {
-  static async login({ request, response }: HttpContextContract) {
-    const { email, password } = request.payload as LoginPayload;
+  static async login(ctx: HttpContextContract) {
+    const { email, password } = ctx.get('payload') as LoginPayload;
     const userId = await PasswordService.login(email, password);
     const session = await SessionService.createSession(userId);
 
-    withSuccess(response, { user: session.payload, token: session.token });
+    return withSuccess(ctx, { user: session.payload, token: session.token });
   }
 
-  static async forgot({ request, response }: HttpContextContract) {
-    const { email } = request.payload as ForgotPasswordPayload;
+  static async forgot(ctx: HttpContextContract) {
+    const { email } = ctx.get('payload') as ForgotPasswordPayload;
     await PasswordService.forgot(email);
 
-    withSuccess(response);
+    return withSuccess(ctx);
   }
 
-  static async reset({ request, response }: HttpContextContract) {
-    const { code, password } = request.payload as ResetPasswordPayload;
+  static async reset(ctx: HttpContextContract) {
+    const { code, password } = ctx.get('payload') as ResetPasswordPayload;
     await PasswordService.reset(code, password);
 
-    withSuccess(response);
+    return withSuccess(ctx);
   }
 }

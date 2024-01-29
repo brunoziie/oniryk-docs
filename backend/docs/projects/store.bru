@@ -1,0 +1,30 @@
+meta {
+  name: 0_store
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{HOST}}/projects
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ACCESS_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:pre-request {
+  const {faker} = require('@faker-js/faker');
+  const title = faker.commerce.productName();
+  const description = faker.commerce.productDescription();
+  
+  req.setBody(JSON.stringify({
+    title,
+    description
+  }));
+}

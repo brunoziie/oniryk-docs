@@ -1,32 +1,36 @@
 import { AuthUser } from '@app:contracts/auth.contract';
+import { MiddlewareFn } from '@app:contracts/http.contract';
+import { AppError, UNAUTHORIZED } from '@app:helpers/error';
 import JwtService from '@app:services/auth/jwt';
-import { MiddlewareContext } from '@app:contracts/http.contract';
-import { withError } from '@app:helpers/http';
 
-export default async function AuthMiddleware(context: MiddlewareContext) {
-  const { request, response, next } = context;
-  const authHeader = request.headers.authorization;
+const auth: MiddlewareFn = async (ctx, next) => {
+  const path = ctx.req.path;
 
-  if (!authHeader) {
-    return withError(response, new Error('Auth: No token provided'), 401);
+  if (path === '/favicon.ico' || path === '/robots.txt' || path.startsWith('/auth')) {
+    return next();
   }
 
-  const parts = authHeader.split(' ');
+  const headers = ctx.req.raw.headers;
+  const authorization = headers.get('authorization') || '';
 
-  if (parts.length !== 2) {
-    return withError(response, new Error('Auth: Token error'), 401);
+  if (!authorization) {
+    throw AppError('auth', 'no token provided', UNAUTHORIZED);
   }
 
-  const [scheme, token] = parts;
-
-  if (!/^Bearer$/i.test(scheme)) {
-    return withError(response, new Error('Auth: Token malformatted'), 401);
+  if (!authorization.match(/Bearer\s.*/)) {
+    throw AppError('auth', 'invalid authorization token format', UNAUTHORIZED);
   }
+
+  const token = authorization.replace('Bearer ', '');
 
   try {
-    request.user = await JwtService.verify<AuthUser>(token);
-    next();
+    const user = await JwtService.verify<AuthUser>(token);
+    ctx.set('user', user);
   } catch (err) {
-    return withError(response, new Error('Auth: Token invalid'), 401);
+    throw AppError('auth', 'invalid authorization token format', UNAUTHORIZED);
   }
-}
+
+  return next();
+};
+
+export default auth;

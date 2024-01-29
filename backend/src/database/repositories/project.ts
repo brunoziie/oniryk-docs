@@ -1,6 +1,6 @@
 import { db } from '@db:client';
 import { Project, ProjectInsert, ownerships, projects, teams, users } from '@db:schemas';
-import { form } from '@db:utils';
+import { form, fulltext } from '@db:utils';
 import { and, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { AuthUser } from '../../contracts/auth.contract';
@@ -8,12 +8,13 @@ import { PaginationContract } from '../../contracts/pagination.contract';
 import TeamRepository from './teams';
 
 export default class ProjectRepository {
-  static async allProjects(
+  static async all(
     user: AuthUser,
     page = 1,
-    perPage = 50
+    perPage = 50,
+    query?: string
   ): Promise<PaginationContract<Project>> {
-    const teams = await TeamRepository.getUserTeams(user.id);
+    const teams = await TeamRepository.getMembers(user.id);
     const ownershipConds = [eq(ownerships.userId, user.id)];
 
     if (teams.length) {
@@ -24,6 +25,12 @@ export default class ProjectRepository {
         )
       );
     }
+
+    const conditions = and(
+      or(...ownershipConds),
+      isNull(projects.deletedAt),
+      ...(query ? [fulltext([projects.title, projects.description], query)] : [])
+    );
 
     const [total] = await db
       .select({ count: sql<number>`COUNT(DISTINCT ${projects.id})` })
@@ -36,7 +43,7 @@ export default class ProjectRepository {
           isNull(ownerships.deletedAt)
         )
       )
-      .where(and(or(...ownershipConds), isNull(projects.deletedAt)));
+      .where(conditions);
 
     const rows = await db
       .select({ projects })
@@ -49,7 +56,7 @@ export default class ProjectRepository {
           isNull(ownerships.deletedAt)
         )
       )
-      .where(and(or(...ownershipConds), isNull(projects.deletedAt)))
+      .where(conditions)
       .groupBy(projects.id)
       .limit(perPage)
       .offset((page - 1) * perPage);
@@ -73,7 +80,7 @@ export default class ProjectRepository {
   }
 
   static async findForUser(user: AuthUser, id: string) {
-    const teams = await TeamRepository.getUserTeams(user.id);
+    const teams = await TeamRepository.getMembers(user.id);
     const ownershipConds = [eq(ownerships.userId, user.id)];
 
     if (teams.length) {
@@ -102,7 +109,7 @@ export default class ProjectRepository {
     return row ? row.projects : null;
   }
 
-  static async createProject(user: AuthUser, data: ProjectInsert) {
+  static async create(user: AuthUser, data: ProjectInsert) {
     const id = randomUUID();
 
     await db.transaction(async (trx) => {
@@ -112,13 +119,14 @@ export default class ProjectRepository {
         entityId: id,
         userId: user.id,
         level: 'owner',
+        teamId: null,
       });
     });
 
     return id;
   }
 
-  static async updateProject(id: string, data: Omit<ProjectInsert, 'id'>) {
+  static async update(id: string, data: Omit<ProjectInsert, 'id'>) {
     const formdata = form(data, ['title', 'description']);
 
     if (formdata.isNotEmpty()) {
@@ -128,7 +136,7 @@ export default class ProjectRepository {
     return true;
   }
 
-  static async getProjectMembers(id: string) {
+  static async getMembers(id: string) {
     const rows = await db
       .select()
       .from(ownerships)
@@ -158,6 +166,7 @@ export default class ProjectRepository {
         .update(projects)
         .set({ deletedAt: new Date() })
         .where(eq(projects.id, id));
+
       await trx
         .update(ownerships)
         .set({ deletedAt: new Date() })

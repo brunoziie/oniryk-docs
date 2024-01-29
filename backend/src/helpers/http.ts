@@ -1,55 +1,71 @@
-import type { Response } from 'express';
-import { snakeifyObjectKeys } from './inflection';
-import { PaginationContract } from '../contracts/pagination.contract';
+import { HttpContextContract } from '@app:contracts/http.contract';
 import { ZodError } from 'zod';
+import { fromZodError } from 'zod-validation-error';
+import { PaginationContract } from '../contracts/pagination.contract';
+import { isAppError, parseAppError, parseErrorStack } from './error';
+import { snakeifyObjectKeys } from './inflection';
 
 export function withSuccess(
-  response: Response,
+  ctx: HttpContextContract,
   data: unknown = null,
   statusCode: number = 200
 ) {
+  const ownership = ctx.get('ownership');
+
   const payload = snakeifyObjectKeys({
     status: 'OK',
     data,
     error: null,
+    ...(ownership ? { ownership } : {}),
   });
 
-  response.status(statusCode).json(payload);
+  return ctx.json(payload, statusCode);
 }
 
-export function withError(response: Response, error: Error, statusCode: number = 500) {
-  response.status(statusCode).json({
-    status: 'ERROR',
-    data: null,
-    error: {
-      message: error.message,
-      ...(process.env.NODE_ENV === 'development'
-        ? { stack: error.stack?.split(/\n/) }
-        : {}),
-    },
-  });
-}
-
-export function withValidationError(
-  response: Response,
-  error: ZodError,
-  statusCode: number = 400
+export function withError(
+  ctx: HttpContextContract,
+  err: Error,
+  statusCode: number = 500
 ) {
-  response.status(statusCode).json({
-    status: 'ERROR',
-    data: null,
-    error: {
-      message: 'Validation failed',
-      issues: (error.issues || []).map((issue: any) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-        rule: [issue.type, issue.code].filter(Boolean).join('.'),
-      })),
-    },
-  });
+  let error = {};
+  let status = statusCode;
+
+  if (isAppError(err)) {
+    const appErr = parseAppError(err);
+    status = appErr.status;
+
+    error = {
+      message: appErr.message,
+      stack: parseErrorStack(err),
+    };
+  } else if (err instanceof ZodError) {
+    const issueSeparator = '/^:$/';
+    const zodErr = fromZodError(err, { prefix: null, issueSeparator });
+
+    error = {
+      message: '[shield] validation failed',
+      issues: zodErr.message.toLowerCase().replace(/\"/g, "'").split(issueSeparator),
+    };
+
+    status = 400;
+  } else {
+    error = {
+      message: err.message,
+      ...(process.env.NODE_ENV === 'development'
+        ? { stack: err.stack?.split(/\n/) }
+        : {}),
+    };
+  }
+
+  return ctx.json({ status: 'ERROR', error }, status);
 }
 
-export function withPagination(response: Response, data: PaginationContract<unknown>) {
+export function withPagination(
+  ctx: HttpContextContract,
+  data: PaginationContract<unknown>
+) {
+  const ownership = ctx.get('ownership');
+
   const payload = snakeifyObjectKeys({
     status: 'OK',
     data: data.rows,
@@ -59,7 +75,8 @@ export function withPagination(response: Response, data: PaginationContract<unkn
       perPage: data.perPage,
     },
     error: null,
+    ...(ownership ? { ownership } : {}),
   });
 
-  response.status(200).json(payload);
+  return ctx.json(payload, 200);
 }

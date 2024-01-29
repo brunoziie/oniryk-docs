@@ -1,16 +1,20 @@
-import zod from 'zod';
 import dotenv from 'dotenv';
-import parser from 'dotenv-parse-variables';
 import { expand } from 'dotenv-expand';
+import zod from 'zod';
 
 const original = expand(dotenv.config());
+const boolean = () => zod.enum(['true', 'false']).transform((value) => value === 'true');
 
 const schema = zod.object({
   NODE_ENV: zod.enum(['development', 'production', 'test']).default('development'),
   BASE_URL: zod.string().url(),
-  PORT: zod.number().default(3000),
-  DEBUG: zod.boolean().default(false), // will be ignored if NODE_ENV is not 'development'
+  PORT: zod.coerce.number().optional().default(3000),
   FRONTEND_URL: zod.string().url(),
+
+  // Profiling
+  DEBUG_DB: boolean(),
+  DEBUG_LOGGING: boolean(),
+  DEBUG_MAILDEV: boolean(),
 
   // Session / Crypto
   APP_SECRET: zod.string(),
@@ -34,6 +38,15 @@ const schema = zod.object({
   GOOGLE_CALLBACK_URL: zod.string().url(),
 });
 
-const env = schema.parse(parser(original.parsed || {}));
+const env = schema.parse(original.parsed || {});
+
+export const runWhen = (
+  nodeEnv: 'development' | 'production' | 'test',
+  fn: () => unknown
+) => {
+  if (nodeEnv === env.NODE_ENV) {
+    fn();
+  }
+};
 
 export default env;

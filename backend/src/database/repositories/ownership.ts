@@ -1,9 +1,11 @@
-import { and, eq, or, inArray } from 'drizzle-orm';
 import { db } from '@db:client';
-import { ownerships, Ownership, EntityType, OwnershipLevel } from '@db:schemas';
+import { EntityType, Ownership, OwnershipLevel, ownerships } from '@db:schemas';
+import { and, eq, inArray, or } from 'drizzle-orm';
 
 export type AddToUserParams = Pick<Ownership, 'entity' | 'entityId' | 'userId' | 'level'>;
 export type AddToTeamParams = Omit<AddToUserParams, 'userId'> & { teamId: string };
+
+const hierarchy: OwnershipLevel[] = ['owner', 'writer', 'viewer'];
 
 export default class OwnershipRepository {
   static async getEntityOwnership(
@@ -25,7 +27,7 @@ export default class OwnershipRepository {
       ? or(eq(ownerships.userId, userId), inArray(ownerships.teamId, teams))
       : eq(ownerships.userId, userId);
 
-    const [ownership] = await db
+    const results = await db
       .select()
       .from(ownerships)
       .where(
@@ -33,11 +35,20 @@ export default class OwnershipRepository {
           eq(ownerships.entity, entity),
           eq(ownerships.entityId, entityId),
           related,
-          inArray(ownerships.level, levels)
+          ...(levels.length ? [inArray(ownerships.level, levels)] : [])
         )
       );
 
-    return ownership || null;
+    if (!results.length) {
+      return null;
+    }
+
+    const highest = results.reduce((acc, curr) => {
+      const index = hierarchy.indexOf(curr.level);
+      return index < hierarchy.indexOf(acc.level) ? curr : acc;
+    }, results[0]);
+
+    return highest;
   }
 
   static async addEntityOwnership(

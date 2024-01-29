@@ -5,7 +5,7 @@ import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 
 export default class TeamRepository {
-  static async getUserTeams(userId: string, tx?: MySqlDBTransaction): Promise<Team[]> {
+  static async getMembers(userId: string, tx?: MySqlDBTransaction): Promise<Team[]> {
     const ownershipSq = (tx || db)
       .select({ id: ownerships.entityId })
       .from(ownerships)
