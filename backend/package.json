@@ -4,16 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only --exit-child server.ts",
+    "dev": "tsx server.ts",
     "build": "tsc && tsc-alias",
-    "start": "node --env-file=.env build/server.js",
+    "start": "node --env-file=.env dist/server.js",
     "test": "cd docs && npx @usebruno/cli run --env local",
     "db:migrate": "drizzle-kit push:mysql",
     "db:generate": "drizzle-kit generate:mysql",
-    "db:fulltext": "ts-node ./src/database/fulltext.ts"
-  },
-  "prisma": {
-    "seed": "ts-node-dev -r tsconfig-paths/register prisma/seed.ts"
+    "db:fulltext": "tsx ./src/database/fulltext.ts"
   },
   "author": "",
   "license": "ISC",
@@ -32,9 +29,8 @@
     "@types/react": "^18.2.48",
     "@types/uuid": "^9.0.7",
     "prettier": "^3.2.2",
-    "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.8",
-    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
