@@ -1,6 +1,6 @@
 import env from '@app:env';
 import indexes from '@db:fulltext-indexes';
-import { sql, getTableName } from 'drizzle-orm';
+import { getTableName, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/mysql2';
 import { createConnection } from 'mysql2';
 
@@ -20,6 +20,8 @@ async function main() {
         sql`CREATE FULLTEXT INDEX IF NOT EXISTS ${sql.raw(name)} ON ${sql.raw(tableName)}(${sql.raw(columnNames.join(', '))})`
       );
     }
+
+    console.log('Fulltext indexes created');
 
     connection.end();
   } catch (error) {
