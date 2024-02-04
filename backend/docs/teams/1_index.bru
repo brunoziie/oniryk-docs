@@ -1,0 +1,27 @@
+meta {
+  name: 1_index
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{HOST}}/teams
+  body: none
+  auth: none
+}
+
+query {
+  ~page: 1
+  ~q: diga
+  ~limit: 1
+}
+
+headers {
+  Authorization: Bearer {{ACCESS_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.pagination: isDefined
+}

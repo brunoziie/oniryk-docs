@@ -3,9 +3,9 @@ import { Project, ProjectInsert, ownerships, projects, teams, users } from '@db:
 import { form, fulltext } from '@db:utils';
 import { and, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
-import { AuthUser } from '../../contracts/auth.contract';
-import { PaginationContract } from '../../contracts/pagination.contract';
-import TeamRepository from './teams';
+import { AuthUser } from '../../../contracts/auth.contract';
+import { PaginationContract } from '../../../contracts/pagination.contract';
+import TeamRepository from '../team/team';
 
 export default class ProjectRepository {
   static async all(
@@ -14,7 +14,7 @@ export default class ProjectRepository {
     perPage = 50,
     query?: string
   ): Promise<PaginationContract<Project>> {
-    const teams = await TeamRepository.getMembers(user.id);
+    const teams = await TeamRepository.members(user.id);
     const ownershipConds = [eq(ownerships.userId, user.id)];
 
     if (teams.length) {
@@ -80,7 +80,7 @@ export default class ProjectRepository {
   }
 
   static async findForUser(user: AuthUser, id: string) {
-    const teams = await TeamRepository.getMembers(user.id);
+    const teams = await TeamRepository.members(user.id);
     const ownershipConds = [eq(ownerships.userId, user.id)];
 
     if (teams.length) {
@@ -136,7 +136,7 @@ export default class ProjectRepository {
     return true;
   }
 
-  static async getMembers(id: string) {
+  static async members(id: string) {
     const rows = await db
       .select()
       .from(ownerships)

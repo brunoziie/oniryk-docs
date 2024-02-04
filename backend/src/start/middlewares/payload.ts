@@ -1,4 +1,5 @@
 import { HttpContextContract, NextFn } from '@app:contracts/http.contract';
+import { camelizeObjectKeys } from '@app:helpers/inflection';
 import Zod from 'zod';
 
 const filterSchema = Zod.object({
@@ -25,7 +26,7 @@ export default async function payload(ctx: HttpContextContract, next: NextFn) {
     }
   }
 
-  ctx.set('payload', payload);
+  ctx.set('payload', camelizeObjectKeys(payload));
   const filters = filterSchema.parse(queries);
   ctx.set('filters', filters);
   await next();

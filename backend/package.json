@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx server.ts",
+    "dev": "tsx watch server.ts",
+    "cmd": "tsx lib/commands.ts",
     "build": "tsc && tsc-alias",
     "start": "node --env-file=.env dist/server.js",
     "test": "cd docs && npx @usebruno/cli run --env local",

@@ -1,0 +1,24 @@
+Teams:
+  ✔ Criar time (nome) @done
+  ✔ Editar time (nome) @done(24-02-04 10:49)
+  ✔ Excluir time @done(24-02-04 10:49)
+  ✔ Adicionar membro @done(24-02-04 10:49)
+  ✔ Remover membro @done(24-02-04 10:49)
+  ✔ Listar membros @done(24-02-04 10:49)
+  ✔ Alterar papel do membro @done(24-02-04 10:49)
+  ✔ Times precisam obrigatoriamente ter um dono @done(24-02-04 10:49)
+  ☐ Adicionar opção para sair do time
+  ☐ Criar sistema de convites para times
+
+Projetos:
+  ✔ Listar projetos do usuário logado incluindo relacionamento com times @done(24-02-04 10:49)
+  ✔ Criar projeto (nome, descricao) @done(24-02-04 10:49)
+  ✔ Editar projeto (nome, descricao) @done(24-02-04 10:49)
+  ✔ Excluir projeto @done(24-02-04 10:49)
+  ☐ Listar membros
+  ☐ Adicionar membro (times ou usuários)
+  ☐ Remover membro
+  ☐ Alterar papel do membro
+  ☐ Projetos precisam obrigatoriamente ter um dono
+  ☐ Adicionar opção para sair do projeto
+  ☐ Criar sistema de convites para projetos

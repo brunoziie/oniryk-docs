@@ -7,6 +7,7 @@ import { compress } from 'hono/compress';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 
+import banner from 'lib/banner';
 import auth from './middlewares/auth';
 import payload from './middlewares/payload';
 import routes from './routes';
@@ -57,8 +58,9 @@ const hono = (setup?: (app: Hono) => void) => {
 
   server.on('listening', () => {
     const lines = [
-      `\n\n🚀 Oniryk Docs :: Running @ http://0.0.0.0:${env.PORT}\n`,
-      `🛠️  NODE_ENV: ${process.env.NODE_ENV}`,
+      banner(),
+      `   Running @ http://0.0.0.0:${env.PORT}\n`,
+      `   NODE_ENV: ${process.env.NODE_ENV}`,
       `   DEBUG_DB: ${process.env.DEBUG_DB}`,
       `   DEBUG_LOGGING: ${process.env.DEBUG_LOGGING}`,
       `   DEBUG_MAILDEV: ${process.env.DEBUG_MAILDEV}`,

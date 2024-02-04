@@ -1,5 +1,5 @@
 import { AuthUser } from '@app:contracts/auth.contract';
-import ProjectRepository from '@db:repositories/project';
+import ProjectRepository from '@db:repositories/project/project';
 import { Project, ProjectInsert } from '@db:schemas';
 import { Updatable } from '@db:utils';
 
@@ -16,7 +16,7 @@ export default class ProjectCrudService {
     }
 
     if (withMembers) {
-      const members = await ProjectRepository.getMembers(id);
+      const members = await ProjectRepository.members(id);
       return { ...project, members };
     }
 

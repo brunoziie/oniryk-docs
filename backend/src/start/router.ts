@@ -15,7 +15,8 @@ export type Route = (
 
 export type Group = (
   prefix: string,
-  def: (attrs: { route: Route; group: Group }) => void
+  def: (attrs: { route: Route; group: Group }) => void,
+  middlewares?: MiddlewareFn[]
 ) => (hono: Hono) => void;
 
 export const route: Route = (method, path, handler, middlewares = []) => {
@@ -24,17 +25,17 @@ export const route: Route = (method, path, handler, middlewares = []) => {
   };
 };
 
-export const group: Group = (prefix, def) => {
+export const group: Group = (prefix, def, groupMiddlewares = []) => {
   return (hono: Hono) => {
     const app = new Hono();
 
     const routeFn: Route = (method, path, handler, middlewares = []) => {
-      route(method, path, handler, middlewares)(app);
+      route(method, path, handler, [...groupMiddlewares, ...middlewares])(app);
       return () => {};
     };
 
     const groupFn: Group = (prefix, def) => {
-      group(prefix, def)(app);
+      group(prefix, def, groupMiddlewares)(app);
       return () => {};
     };
 

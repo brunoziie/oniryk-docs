@@ -1,4 +1,5 @@
 import { HttpContextContract } from '@app:contracts/http.contract';
+import { cleaner } from '@app:helpers/cleaner';
 import { Project } from '@db:schemas';
 import { Updatable } from '@db:utils';
 import { withPagination, withSuccess } from '../helpers/http';
@@ -16,7 +17,10 @@ export default class ProjectsController {
       filters.q
     );
 
-    return withPagination(ctx, projects);
+    return withPagination(
+      ctx,
+      cleaner(projects, { '**deletedAt': false, rows: { $: { description: false } } })
+    );
   }
 
   static async show(ctx: HttpContextContract) {
@@ -24,7 +28,7 @@ export default class ProjectsController {
     const { id } = ctx.req.param() as Record<string, string>;
     const project = await ProjectCrudService.getProject(user, id, true);
 
-    return withSuccess(ctx, project);
+    return withSuccess(ctx, cleaner(project, { '**deletedAt': false }));
   }
 
   static async store(ctx: HttpContextContract) {

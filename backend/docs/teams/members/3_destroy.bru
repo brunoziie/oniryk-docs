@@ -1,0 +1,25 @@
+meta {
+  name: 3_destroy
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{HOST}}/teams/{{TEAM_ID}}/members/4aff6884-9e8f-4dd2-ba27-6534f318b520
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ACCESS_TOKEN}}
+}
+
+body:json {
+  {
+    "level": "writer"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

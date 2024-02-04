@@ -1,0 +1,26 @@
+meta {
+  name: 4_destroy
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{HOST}}/teams/{{TEAM_ID}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ACCESS_TOKEN}}
+}
+
+body:json {
+  {
+    "title": "my awesome project 2",
+    "description": "Pensando mais a longo prazo, o desafiador cenário globalizado causa impacto indireto na reavaliação dos métodos utilizados na avaliação de resultados."
+  }
+}
+
+assert {
+  res.status: eq 200
+}

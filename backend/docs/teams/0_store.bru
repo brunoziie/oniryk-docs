@@ -1,0 +1,27 @@
+meta {
+  name: 0_store
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{HOST}}/teams
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ACCESS_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:pre-request {
+  const {faker} = require('@faker-js/faker');
+  
+  req.setBody(JSON.stringify({
+    name: faker.commerce.productName()
+  }));
+}

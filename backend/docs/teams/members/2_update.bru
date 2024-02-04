@@ -1,0 +1,25 @@
+meta {
+  name: 2_update
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{HOST}}/teams/{{TEAM_ID}}/members/ccb69dc1-52df-4f48-bd8b-bff7246b17f3
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ACCESS_TOKEN}}
+}
+
+body:json {
+  {
+    "level": "writer"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

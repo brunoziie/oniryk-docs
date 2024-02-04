@@ -80,3 +80,7 @@ export function withPagination(
 
   return ctx.json(payload, 200);
 }
+
+export async function PlaceholderAction(ctx: HttpContextContract) {
+  return ctx.json({ NOT_IMPLEMENTED: true }, 501);
+}

@@ -1,0 +1,21 @@
+meta {
+  name: 2_show
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{HOST}}/teams/{{TEAM_ID}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ACCESS_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.ownership: isDefined
+}
