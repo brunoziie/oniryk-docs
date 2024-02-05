@@ -16,7 +16,7 @@ export default function ParticleBackground() {
 
   const options = useMemo(
     () => ({
-      background: { color: { value: '#fff' } },
+      background: { color: { value: '#fdfdfd' } },
       fpsLimit: 120,
       interactivity: {
         modes: {

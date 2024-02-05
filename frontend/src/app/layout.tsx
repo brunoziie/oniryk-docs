@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
 
-const inter = Inter({ subsets: ['latin'] });
+import { GeistSans } from 'geist/font/sans';
 
 export const metadata: Metadata = {
   title: 'oniryk-docs',
@@ -12,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning style={{ colorScheme: 'light' }}>
       <head>
         <meta
           name="format-detection"
@@ -20,16 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
 
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
-      </body>
+      <body className={`${GeistSans.className}`}>{children}</body>
     </html>
   );
 }
