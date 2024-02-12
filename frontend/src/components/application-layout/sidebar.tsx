@@ -1,3 +1,5 @@
+'use client';
+
 import { cn } from '@/lib/utils';
 import {
   Calendar,
@@ -9,9 +11,10 @@ import {
   PanelRightOpen,
   Users,
 } from 'lucide-react';
-import Link from 'next/link';
+
 import { useContext } from 'react';
 import { MenuContext } from '../menu-context';
+import RouteLink from '../custom/route-link';
 
 export type MenuItemProps = {
   icon: LucideIcon;
@@ -25,22 +28,22 @@ export function MenuItem({ icon: Icon, title, href }: MenuItemProps) {
   return (
     <li
       className={cn(
-        'font-medium px-2 py-2 hover:bg-zinc-100 dark:text-zinc-400 mx-2 dark:hover:bg-zinc-600 rounded-sm text-zinc-500 hover:text-zinc-800',
-        'items-center ease-in-out duration-250 transition-colors',
+        'mx-2 rounded-sm px-2 py-2 font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-600',
+        'duration-250 items-center transition-colors ease-in-out',
         { 'w-[32px]': !isOpen }
       )}
     >
-      <Link href={href} className="flex items-center h-5 w-[280px]">
+      <RouteLink href={href} className="flex h-5 w-[280px] items-center">
         <Icon size={16} className="mr-2" />
         <span
-          className={cn('transition-all duration-250', {
+          className={cn('duration-250 transition-all', {
             invisible: !isOpen,
             'opacity-0': !isOpen,
           })}
         >
           {title}
         </span>
-      </Link>
+      </RouteLink>
     </li>
   );
 }
@@ -49,12 +52,12 @@ export function GroupTitle({ title }: { title: string }) {
   const { isOpen } = useContext(MenuContext);
 
   return (
-    <li className="px-4 h-10 flex items-center">
+    <li className="flex h-10 items-center px-4">
       <span
         className={cn(
-          'uppercase text-zinc-400 dark:text-zinc-300 text-xs select-none transition-colors',
+          'select-none text-xs uppercase text-zinc-400 transition-colors dark:text-zinc-300',
           {
-            'text-center w-[48px] -m-4 ': !isOpen,
+            '-m-4 w-[48px] text-center ': !isOpen,
           }
         )}
       >
@@ -69,26 +72,26 @@ export default function ApplicationLayoutSidebar() {
 
   return (
     <aside
-      className={`${isOpen ? 'w-[280px]' : 'w-[64px]'} text-sm px-2 flex flex-col transition-all`}
+      className={`${isOpen ? 'w-[280px]' : 'w-[64px]'} flex flex-col px-2 text-sm transition-all`}
     >
-      <ul className="flex-1 w-[264px]">
+      <ul className="w-[264px] flex-1">
         <GroupTitle title="workspace" />
 
         <MenuItem href="/" icon={Home} title="Dashboard" />
-        <MenuItem href="/" icon={FolderOpenDot} title="Projects" />
-        <MenuItem href="/" icon={Users} title="Teams" />
-        <MenuItem href="/" icon={Calendar} title="Calendar" />
-        <MenuItem href="/" icon={MessagesSquare} title="Journaling" />
+        <MenuItem href="/projects" icon={FolderOpenDot} title="Projects" />
+        <MenuItem href="/teams" icon={Users} title="Teams" />
+        <MenuItem href="/calendar" icon={Calendar} title="Calendar" />
+        <MenuItem href="/journaling" icon={MessagesSquare} title="Journaling" />
 
         <GroupTitle title="favorites" />
 
-        <MenuItem href="/" icon={FolderHeart} title="Rocambole" />
-        <MenuItem href="/" icon={FolderHeart} title="NutriNutri" />
-        <MenuItem href="/" icon={FolderHeart} title="Sabonete Label" />
+        <MenuItem href="/projects/a" icon={FolderHeart} title="Rocambole" />
+        <MenuItem href="/projects/b" icon={FolderHeart} title="NutriNutri" />
+        <MenuItem href="/projects/c" icon={FolderHeart} title="Sabonete Label" />
       </ul>
 
       <button
-        className="p-2 m-2 rounded-sm flex-none w-8 mb-4 border-zinc-200 dark:border-zinc-500 border hover:bg-zinc-100"
+        className="m-2 mb-4 w-8 flex-none rounded-sm border border-zinc-200 p-2 hover:bg-zinc-100 dark:border-zinc-500"
         onClick={() => toggle()}
       >
         <PanelRightOpen

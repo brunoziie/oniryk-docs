@@ -37,7 +37,7 @@ export function DataTableFacetedFilter<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 border-dashed dark:bg-transparent dark:border dark:border-zinc-600 dark:text-zinc-400"
+          className="h-8 border-dashed dark:border dark:border-zinc-600 dark:bg-transparent dark:text-zinc-400"
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           {title}
@@ -75,7 +75,10 @@ export function DataTableFacetedFilter<TData, TValue>({
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-2" align="start">
         <Command>
-          <CommandInput placeholder={title} className="w-full" />
+          <CommandInput
+            placeholder={title}
+            className="border-input h-8 w-full rounded-md border px-2"
+          />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
@@ -85,7 +88,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                 return (
                   <CommandItem
                     key={option.value}
-                    className="flex items-center"
+                    className="hover:bg-primary-foreground  flex select-none items-center px-2 py-1"
                     onSelect={() => {
                       const set = new Set(selectedValues);
 
@@ -100,7 +103,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                   >
                     <div
                       className={cn(
-                        'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                        'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
                         isSelected
                           ? 'bg-primary text-primary-foreground'
                           : 'opacity-50 [&_svg]:invisible'

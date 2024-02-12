@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 import { GeistSans } from 'geist/font/sans';
+import Providers from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'oniryk-docs',
@@ -16,9 +17,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"
         />
+        <link rel="icon" href="/brand.svg" sizes="any" />
       </head>
 
-      <body className={`${GeistSans.className}`}>{children}</body>
+      <body className={`${GeistSans.className}`}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

@@ -32,11 +32,11 @@ export function CommandBar() {
     <>
       <div
         onClick={() => setOpen(true)}
-        className="rounded-md border w-[180px] hover:bg-zinc-100 cursor-pointer bg-white dark:bg-transparent dark:border dark:border-zinc-600  h-8 flex items-center p-2 shadow-sm"
+        className="flex h-8 w-[180px] cursor-pointer items-center rounded-md border bg-white p-2 shadow-sm hover:bg-zinc-100 dark:border dark:border-zinc-600 dark:bg-transparent"
       >
-        <div className="text-sm text-muted-foreground flex-1 flex place-content-between">
+        <div className="text-muted-foreground flex flex-1 place-content-between text-sm">
           <span className="mr-2 flex-1">Search</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
             <span className="text-xs">⌘</span>K
           </kbd>
         </div>

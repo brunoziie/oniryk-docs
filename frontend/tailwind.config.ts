@@ -2,14 +2,16 @@ import type { Config } from 'tailwindcss';
 
 const config = {
   darkMode: ['class'],
-  content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-  ],
+  content: ['./src/**/*.{ts,tsx}'],
   prefix: '',
   theme: {
+    screens: {
+      phone: '320px',
+      tablet: '768px',
+      laptop: '1024px',
+      desktop: '1280px',
+      ultra: '1920px',
+    },
     container: {
       center: true,
       padding: '2rem',
@@ -67,6 +69,15 @@ const config = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        'jump-shaking': {
+          '0%': { transform: 'translateX(0)' },
+          '25%': { transform: 'translateY(-9px)' },
+          '35%': { transform: 'translateY(-9px) rotate(17deg)' },
+          '55%': { transform: 'translateY(-9px) rotate(-17deg)' },
+          '65%': { transform: 'translateY(-9px) rotate(17deg)' },
+          '75%': { transform: 'translateY(-9px) rotate(-17deg)' },
+          '100%': { transform: 'translateY(0) rotate(0)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -75,10 +86,11 @@ const config = {
         bounce100: 'bounce .75s infinite 100ms',
         bounce200: 'bounce .75s infinite 200ms',
         bounce400: 'bounce .75s infinite 400ms',
+        happy: 'jump-shaking .5s ease-in-out ',
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('tailwind-scrollbar')],
 } satisfies Config;
 
 export default config;

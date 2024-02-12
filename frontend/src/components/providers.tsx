@@ -1,3 +1,5 @@
+'use client';
+
 import { ThemeProvider } from 'next-themes';
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { MenuContextProvider } from './menu-context';
